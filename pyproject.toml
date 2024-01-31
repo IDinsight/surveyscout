@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+
+[project]
+name = "surveysparrow_optimization"
+description = "Linear optimization for  target-enumerators assignment"
+readme = "README.md"
+requires-python = ">=3.11"
+keywords = ["optimization", "or tools", "linear programming"]
+authors = [
+    {name = "IDinsight"}
+]
+dynamic = ["version", "dependencies"]
+
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+version = {attr = "surveysparrow_optimization.__version__"}
+
+
+[tool.setuptools.packages.find]
+include = ["surveysparrow_optimization*"]
+exclude = ["tests*"]
