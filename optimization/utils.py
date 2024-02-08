@@ -1,15 +1,15 @@
-from math import radians
+import numpy as np
+from math import radians, sin, cos, sqrt, atan2
 from pathlib import Path
 
 import pandas as pd
-import yamlx
-from sklearn.metrics.pairwise import haversine_distances
-
 
 project_root = Path(__file__).parents[1]
 
 
 class LocationDataset(object):
+    """A container for managing and accessing location-related data within a pandas DataFrame."""
+
     def __init__(
         self,
         dataframe: pd.DataFrame,
@@ -77,32 +77,26 @@ def validate_data_config(data):
     return True
 
 
-def get_intergroup_haversine_matrix(row_locations, col_locations):
-    """
-    Computes the haversine distance between each pair of enumerator and target.
+def haversine(lat1, lon1, lat2, lon2):
+    """Compute the haversine distance between two GPS coordinates."""
+    R = 6371.0
 
-    Parameters
-    ----------
-    row_locations : class <LocationDataset>
-        class containing locations informations
-    col_locations : class <LocationDataset>
-        class containing locations informations
-    Returns
-    -------
-    pandas.DataFrame
-        Haversine distance matrix
-    """
-    row_ids = row_locations.get_ids()
-    row_gps_coords = row_locations.get_gps_coords()
-    col_ids = col_locations.get_ids()
-    col_gps_coords = col_locations.get_gps_coords()
-    row_coords_rads = pd.DataFrame(row_gps_coords).applymap(radians).values
-    col_coords_rads = pd.DataFrame(col_gps_coords).applymap(radians).values
+    # convert decimal degrees to radians
+    lat1_rad, lon1_rad = radians(lat1), radians(lon1)
+    lat2_rad, lon2_rad = radians(lat2), radians(lon2)
 
-    distance_array = EARTH_RADIUS * haversine_distances(
-        row_coords_rads, col_coords_rads
-    )
+    # Haversine formula
+    dlat = lat2_rad - lat1_rad
+    dlon = lon2_rad - lon1_rad
+    a = sin(dlat / 2) ** 2 + cos(lat1_rad) * cos(lat2_rad) * sin(dlon / 2) ** 2
+    c = 2 * atan2(sqrt(a), sqrt(1 - a))
 
-    distance_df = pd.DataFrame(distance_array, columns=col_ids, index=row_ids)
+    distance = R * c
 
-    return distance_df
+    return distance
+
+
+def get_percentile_distance(cost_matrix, max_perc):
+    """Get the maximum distance from the cost matrix by computing percentile ."""
+    max_distance = np.percentile(cost_matrix, max_perc)
+    return max_distance
