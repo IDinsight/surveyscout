@@ -8,8 +8,8 @@ def min_target_optimization_model(
     cost_matrix,
     min_target,
     max_target,
-    max_distance,
-    max_total_distance,
+    max_cost,
+    max_total_cost,
 ):
     """
     Formulate and solve an optimization model to assign targets to surveyors while
@@ -17,14 +17,14 @@ def min_target_optimization_model(
     The following constraints are considered:
         - Each target is assigned to exactly one surveyor.
         - Each surveyor is assigned at least `min_target` targets and at most `max_target` targets.
-        - The cost of assigning a surveyor to a target does not exceed `max_distance`.
-        - The total cost of all assignments for a surveyor does not exceed `max_total_distance`.
+        - The cost of assigning a surveyor to a target does not exceed `max_cost`.
+        - The total cost of all assignments for a surveyor does not exceed `max_total_cost`.
 
     Parameters
     ----------
     cost_matrix : array_like
         A 2D array representing the costs of assigning surveyors to targets,
-        typically distances. Shape: (n_target, n_enum).
+        typically costs. Shape: (n_target, n_enum).
 
     min_target : int
         The minimum number of targets each enumerator is required to visit.
@@ -32,11 +32,11 @@ def min_target_optimization_model(
     max_target : int
         The maximum number of targets each enumerator is allowed to visit.
 
-    max_distance : float
-        The maximum allowable distance an enumerator can travel to a single target.
+    max_cost : float
+        The maximum allowable cost to travel to a single target.
 
-    max_total_distance : float
-        The maximum total distance each enumerator can travel to visit targets.
+    max_total_cost : float
+        The maximum total cost to travel to visit targets.
 
     Returns
     -------
@@ -72,14 +72,13 @@ def min_target_optimization_model(
 
     for j in range(n_enum):
         solver.Add(
-            sum(cost_matrix[i, j] * x[i, j] for i in range(n_target))
-            <= max_total_distance
+            sum(cost_matrix[i, j] * x[i, j] for i in range(n_target)) <= max_total_cost
         )  # surveyor budget constraint
 
     for i in range(n_target):
         for j in range(n_enum):
             solver.Add(
-                cost_matrix[i, j] * x[i, j] <= max_distance
+                cost_matrix[i, j] * x[i, j] <= max_cost
             )  # surveyor budget constraint
 
     solver.Minimize(
@@ -104,8 +103,9 @@ def recursive_min_target_optimization(
     cost_matrix,
     min_target,
     max_target,
-    max_total_distance,
-    max_perc=80,
+    max_cost,
+    max_total_cost,
+    max_perc=70,
     param_increment=5,
 ):
     """
@@ -115,15 +115,15 @@ def recursive_min_target_optimization(
 
     The function attempts to solve the optimization problem with initially provided
     constraints. If the solution is not found, it will reduce the `min_target` by
-    `param_increment` and increase both `max_target` and `max_total_distance` by `param_increment`.
+    `param_increment` and increase both `max_target` and `max_total_cost` by `param_increment`.
     It also increases `max_perc` by `param_increment` to a maximum of 100 to adjust the maximum
-    distance accordingly until a solution is reached or `min_target` is zero.
+    cost accordingly until a solution is reached or `min_target` is zero.
 
     Parameters
     ----------
     cost_matrix : numpy.ndarray
         A 2D array representing the costs of assigning surveyors to targets,
-        typically distances. Shape: (n_target, n_enum).
+        typically costs. Shape: (n_target, n_enum).
 
     min_target : int
         The minimum number of targets each enumerator is required to visit.
@@ -131,11 +131,13 @@ def recursive_min_target_optimization(
     max_target : int
         The maximum number of targets each enumerator is allowed to visit.
 
-    max_total_distance : float
-        The initial maximum total distance assignable to a surveyor.
+    max_cost : float
+        The initial maximum cost assignable to a surveyor to visit a single target.
+    max_total_cost : float
+        The initial maximum total cost assignable to a surveyor.
 
     max_perc : int, optional
-        The initial percentile to determine the maximum surveyor-to-target distance (default is 80).
+        The initial percentile to determine the maximum surveyor-to-target cost (default is 70).
 
     param_increment : int, optional
         The value by which the parameter bounds and percentiles are adjusted during the
@@ -149,22 +151,22 @@ def recursive_min_target_optimization(
         is found, returns (None, empty dictionary).
     """
 
-    max_distance = get_percentile_distance(cost_matrix, max_perc)
+    _max_cost = min(max_cost, get_percentile_distance(cost_matrix, max_perc))
 
     result = min_target_optimization_model(
         cost_matrix,
         min_target,
         max_target,
-        max_distance,
-        max_total_distance,
+        _max_cost,
+        max_total_cost,
     )
 
     if result is not None:
         params = {
             "min_target": min_target,
             "max_target": max_target,
-            "max_distance": max_distance,
-            "max_total_distance": max_total_distance,
+            "max_cost": _max_cost,
+            "max_total_cost": max_total_cost,
         }
 
         return result, params
@@ -174,8 +176,9 @@ def recursive_min_target_optimization(
             cost_matrix,
             min_target=min_target - param_increment,
             max_target=max_target + param_increment,
-            max_perc=max_perc + param_increment if max_perc < 100 else 100,
-            max_total_distance=max_total_distance + param_increment,
+            max_cost=_max_cost,
+            max_perc=min(max_perc + param_increment, 100),
+            max_total_cost=max_total_cost + param_increment,
         )
     else:
         return None, dict({})

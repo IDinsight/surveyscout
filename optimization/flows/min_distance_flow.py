@@ -60,8 +60,8 @@ def basic_min_distance_flow(
         cost_matrix=matrix_df.values,
         min_target=min_target,
         max_target=max_target,
-        max_distance=max_distance,
-        max_total_distance=max_total_distance,
+        max_cost=max_distance,
+        max_total_cost=max_total_distance,
     )
 
     results = postprocess_results(
@@ -77,6 +77,7 @@ def recursive_optimization_flow(
     target_locations,
     min_target,
     max_target,
+    max_distance,
     max_total_distance,
     max_perc=70,
     param_increment=5,
@@ -103,6 +104,8 @@ def recursive_optimization_flow(
     max_target : int
         The maximum number of targets each enumerator is allowed to visit.
 
+    max_distance : float
+        The maximum total distance each enumerator can travel to visit targets.
     max_total_distance : float
         The maximum total distance each enumerator can travel to visit targets.
 
@@ -128,7 +131,8 @@ def recursive_optimization_flow(
         cost_matrix=matrix_df.values,
         min_target=min_target,
         max_target=max_target,
-        max_total_distance=max_total_distance,
+        max_cost=max_distance,
+        max_total_cost=max_total_distance,
         max_perc=max_perc,
         param_increment=param_increment,
     )

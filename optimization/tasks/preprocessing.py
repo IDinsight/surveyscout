@@ -26,16 +26,14 @@ def get_enum_target_haversine_matrix(
     pd.DataFrame
         Haversine distance matrix between enumerators and targets.
     """
-    targets = target_locations.get_gps_coords()
-    enums = enum_locations.get_gps_coords()
+    targets_lat = target_locations.get_gps_coords()[:, 0]
+    targets_long = target_locations.get_gps_coords()[:, 1]
+    enums_lat = enum_locations.get_gps_coords()[:, 0]
+    enums_long = enum_locations.get_gps_coords()[:, 1]
 
-    matrix = np.zeros((len(targets), len(enums)))
-
-    for i in range(len(targets)):
-        for j in range(len(enums)):
-            matrix[i, j] = haversine(
-                targets[i][1], targets[i][0], enums[j][1], enums[j][0]
-            )
+    lat1, lat2 = np.meshgrid(targets_lat, enums_lat, indexing="ij")
+    lon1, lon2 = np.meshgrid(targets_long, enums_long, indexing="ij")
+    matrix = haversine(lat1, lon1, lat2, lon2)
     matrix_df = pd.DataFrame(
         matrix, index=target_locations.get_ids(), columns=enum_locations.get_ids()
     )
