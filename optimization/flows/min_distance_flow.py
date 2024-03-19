@@ -56,11 +56,6 @@ def basic_min_distance_flow(
         target_locations=target_locations,
     )
 
-    min_possible_max_distance = max(min(matrix_df, axis=0))
-
-    if max_distance <= min_possible_max_distance:
-        max_distance = min_possible_max_distance
-
     results_matrix = min_target_optimization_model(
         cost_matrix=matrix_df.values,
         min_target=min_target,
@@ -116,7 +111,8 @@ def recursive_optimization_flow(
         The maximum total distance each enumerator can travel to visit targets.
 
     param_increment : int, optional
-        The incrementation step for adjusting constraints when a solution isn't found (default is 5).
+       The percentage increment used to adjust parameter values during the optimization
+       recursion if a solution cannot be found. Defaults to 5.
 
     Returns
     -------
@@ -129,6 +125,11 @@ def recursive_optimization_flow(
         enum_locations=enum_locations,
         target_locations=target_locations,
     )
+
+    min_possible_max_distance = max(min(matrix_df, axis=0))
+
+    if max_distance <= min_possible_max_distance:
+        max_distance = min_possible_max_distance
 
     results_matrix, params = recursive_min_target_optimization(
         cost_matrix=matrix_df.values,
