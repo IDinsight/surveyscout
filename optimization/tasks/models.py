@@ -105,7 +105,6 @@ def recursive_min_target_optimization(
     max_target,
     max_cost,
     max_total_cost,
-    max_perc=70,
     param_increment=5,
 ):
     """
@@ -114,10 +113,9 @@ def recursive_min_target_optimization(
     or the minimum number of targets parameter reaches zero.
 
     The function attempts to solve the optimization problem with initially provided
-    constraints. If the solution is not found, it will reduce the `min_target` by
-    `param_increment` and increase both `max_target` and `max_total_cost` by `param_increment`.
-    It also increases `max_perc` by `param_increment` to a maximum of 100 to adjust the maximum
-    cost accordingly until a solution is reached or `min_target` is zero.
+    constraints. If the solution is not found,it incrementally alters the `min_target`, `max_target`,
+    `max_cost`, and `max_total_cost` parameters by a given percentage defined by `param_increment`
+    until a solution is reached or `min_target` is zero.
 
     Parameters
     ----------
@@ -133,11 +131,9 @@ def recursive_min_target_optimization(
 
     max_cost : float
         The initial maximum cost assignable to a surveyor to visit a single target.
+
     max_total_cost : float
         The initial maximum total cost assignable to a surveyor.
-
-    max_perc : int, optional
-        The initial percentile to determine the maximum surveyor-to-target cost (default is 70).
 
     param_increment : int, optional
         The value by which the parameter bounds and percentiles are adjusted during the
@@ -151,13 +147,11 @@ def recursive_min_target_optimization(
         is found, returns (None, empty dictionary).
     """
 
-    _max_cost = min(max_cost, get_percentile_distance(cost_matrix, max_perc))
-
     result = min_target_optimization_model(
         cost_matrix,
         min_target,
         max_target,
-        _max_cost,
+        max_cost,
         max_total_cost,
     )
 
@@ -165,7 +159,7 @@ def recursive_min_target_optimization(
         params = {
             "min_target": min_target,
             "max_target": max_target,
-            "max_cost": _max_cost,
+            "max_cost": max_cost,
             "max_total_cost": max_total_cost,
         }
 
@@ -174,11 +168,10 @@ def recursive_min_target_optimization(
     elif min_target > 0:
         return recursive_min_target_optimization(
             cost_matrix,
-            min_target=min_target - param_increment,
-            max_target=max_target + param_increment,
-            max_cost=_max_cost,
-            max_perc=min(max_perc + param_increment, 100),
-            max_total_cost=max_total_cost + param_increment,
+            min_target=min_target - (min_target * param_increment) / 100,
+            max_target=max_target + (max_target * param_increment) / 100,
+            max_cost=max_cost + (max_cost * param_increment) / 100,
+            max_total_cost=max_total_cost + (max_total_cost * param_increment) / 100,
         )
     else:
         return None, dict({})
