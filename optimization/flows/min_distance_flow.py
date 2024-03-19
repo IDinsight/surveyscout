@@ -79,7 +79,6 @@ def recursive_optimization_flow(
     max_target,
     max_distance,
     max_total_distance,
-    max_perc=70,
     param_increment=5,
 ):
     """
@@ -126,7 +125,7 @@ def recursive_optimization_flow(
         target_locations=target_locations,
     )
 
-    min_possible_max_distance = max(min(matrix_df, axis=0))
+    min_possible_max_distance = matrix_df.min(axis=1).max()
 
     if max_distance <= min_possible_max_distance:
         max_distance = min_possible_max_distance
@@ -137,7 +136,6 @@ def recursive_optimization_flow(
         max_target=max_target,
         max_cost=max_distance,
         max_total_cost=max_total_distance,
-        max_perc=max_perc,
         param_increment=param_increment,
     )
 
