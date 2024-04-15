@@ -168,10 +168,10 @@ def recursive_min_target_optimization(
     elif min_target > 0:
         return recursive_min_target_optimization(
             cost_matrix,
-            min_target=min_target - (min_target * param_increment) / 100,
-            max_target=max_target + (max_target * param_increment) / 100,
-            max_cost=max_cost + (max_cost * param_increment) / 100,
-            max_total_cost=max_total_cost + (max_total_cost * param_increment) / 100,
+            min_target=min_target * (1 - param_increment / 100),
+            max_target=max_target * (1 + param_increment / 100),
+            max_cost=max_cost * (1 + param_increment / 100),
+            max_total_cost=max_total_cost * (1 + param_increment / 100),
         )
     else:
         return None, dict({})
