@@ -1,4 +1,5 @@
 import numpy as np
+from numpy.typing import NDArray
 from pathlib import Path
 
 import pandas as pd
@@ -22,19 +23,19 @@ class LocationDataset(object):
         self.gps_lng_column = gps_lng_column
         self._data_len = len(dataframe)
 
-    def get_ids(self):
+    def get_ids(self) -> NDArray:
         return self.df[self.id_column].values
 
-    def get_id_column(self):
+    def get_id_column(self) -> NDArray:
         return self.id_column
 
-    def get_gps_coords(self):
+    def get_gps_coords(self) -> NDArray:
         return self.df[[self.gps_lat_column, self.gps_lng_column]].values
 
-    def get_gps_columns(self):
+    def get_gps_columns(self) -> NDArray:
         return (self.gps_lat_column, self.gps_lng_column)
 
-    def create_subset(self, new_df):
+    def create_subset(self, new_df: pd.DataFrame):
         return LocationDataset(
             dataframe=new_df,
             id_column=self.id_column,
@@ -49,12 +50,12 @@ class LocationDataset(object):
         return len(self.df)
 
 
-def validate_data_config(data):
+def validate_data_config(locations: LocationDataset) -> bool:
     """Checks if the enum_df is consistent with the config.
 
     Parameters
     ----------
-    data : class <LocationDataset>
+    locations : class <LocationDataset>
         class containing locations informations
     config : dict
         Config
@@ -64,10 +65,10 @@ def validate_data_config(data):
     bool
         True if the data is consistent with the config, False otherwise.
     """
-    df = data.get_df()
-    gps_columns = data.get_gps_columns()
-    assert df[data.get_id_column()].notnull().all()
-    assert df[data.get_id_column()].unique().size == data.get_ids().size
+    df = locations.get_df()
+    gps_columns = locations.get_gps_columns()
+    assert df[locations.get_id_column()].notnull().all()
+    assert df[locations.get_id_column()].unique().size == locations.get_ids().size
     assert df[gps_columns[0]].min() >= -90
     assert df[gps_columns[0]].max() <= 90
     assert df[gps_columns[1]].min() >= -180
@@ -76,7 +77,7 @@ def validate_data_config(data):
     return True
 
 
-def haversine(lat1, lon1, lat2, lon2):
+def haversine(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     """Compute the haversine distance between two GPS coordinates."""
     R = 6371.0
 
@@ -97,9 +98,3 @@ def haversine(lat1, lon1, lat2, lon2):
     distance = R * c
 
     return distance
-
-
-def get_percentile_distance(cost_matrix, max_perc):
-    """Get the maximum distance from the cost matrix by computing percentile ."""
-    max_distance = np.percentile(cost_matrix, max_perc)
-    return max_distance
