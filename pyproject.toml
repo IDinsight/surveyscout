@@ -4,22 +4,22 @@ build-backend = "setuptools.build_meta"
 
 
 [project]
-name = "surveysparrow_optimization"
-description = "Linear optimization for  target-enumerators assignment"
+name = "surveyscout"
+description = "Surveyor-survey target assignment to minimize travel cost"
 readme = "README.md"
 requires-python = ">=3.11"
-keywords = ["optimization", "or tools", "linear programming"]
+keywords = ["optimization", "ortools", "survey operations"]
 authors = [
-    {name = "IDinsight"}
+    {name = "IDinsight", email = "dsem@idinsight.org"}
 ]
 dynamic = ["version", "dependencies"]
 
 
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}
-version = {attr = "surveysparrow_optimization.__version__"}
+version = {attr = "surveyscout.__version__"}
 
 
 [tool.setuptools.packages.find]
-include = ["surveysparrow_optimization*"]
+include = ["surveyscout*"]
 exclude = ["tests*"]
