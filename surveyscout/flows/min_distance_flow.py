@@ -125,18 +125,18 @@ def recursive_optimization_flow(
         and the second a dictionary of the parameters that led to a solution.
     ```
     """
-    matrix_df = get_enum_target_haversine_matrix(
+    distance_df = get_enum_target_haversine_matrix(
         enum_locations=enum_locations,
         target_locations=target_locations,
     )
 
-    min_possible_max_distance = matrix_df.min(axis=1).max()
+    min_possible_max_distance = distance_df.min(axis=1).max()
 
     if max_distance <= min_possible_max_distance:
         max_distance = min_possible_max_distance
 
     results_matrix, params = recursive_min_target_optimization(
-        cost_matrix=matrix_df.values,
+        cost_matrix=distance_df.values,
         min_target=min_target,
         max_target=max_target,
         max_cost=max_distance,
