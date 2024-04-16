@@ -77,7 +77,12 @@ def validate_data_config(locations: LocationDataset) -> bool:
     return True
 
 
-def haversine(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+def haversine(
+    lat1: float | NDArray,
+    lon1: float | NDArray,
+    lat2: float | NDArray,
+    lon2: float | NDArray,
+) -> float | NDArray:
     """Compute the haversine distance between two GPS coordinates."""
     R = 6371.0
 

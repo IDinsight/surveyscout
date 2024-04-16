@@ -2,12 +2,11 @@ from typing import Tuple
 
 import numpy as np
 from numpy.typing import NDArray
-import pandas as pd
 from ortools.linear_solver import pywraplp
 
 
 def min_target_optimization_model(
-    cost_matrix: pd.DataFrame,
+    cost_matrix: NDArray,
     min_target: int,
     max_target: int,
     max_cost: float,
@@ -102,7 +101,7 @@ def min_target_optimization_model(
 
 
 def recursive_min_target_optimization(
-    cost_matrix: pd.DataFrame,
+    cost_matrix: NDArray,
     min_target: int,
     max_target: int,
     max_cost: float,
