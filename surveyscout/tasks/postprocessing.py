@@ -9,6 +9,7 @@ def postprocess_results(
     results: NDArray | List[List],
     enum_locations: LocationDataset,
     target_locations: LocationDataset,
+    enum_target_cost_matrix: NDArray | None = None,
     **kwargs,
 ) -> pd.DataFrame:
     """
@@ -29,7 +30,11 @@ def postprocess_results(
         A <LocationDataset> object containing the id and locations of enumerators.
 
     target_locations : class <LocationDataset>
-        A <LocationDataset> object containing the id and locations of targets, with a similar structure to `enum_locations`.
+        A <LocationDataset> object containing the id and locations of targets, with a
+        similar structure to `enum_locations`.
+
+    enum_target_cost_matrix : NDArray
+        Cost matrix
 
     **kwargs : dict, optional
         Additional keyword arguments that can be used in a custom postprocessing step.
@@ -41,18 +46,22 @@ def postprocess_results(
         to target IDs, enumerator IDs, and assigned values (all 1's).
     """
 
+    if enum_target_cost_matrix is not None:
+        results *= enum_target_cost_matrix
+
     df_results = pd.DataFrame(
         results,
         index=target_locations.get_ids(),
         columns=enum_locations.get_ids(),
     )
+
     stacked = df_results.stack()
-    filtered = stacked[stacked == 1]
+    filtered = stacked[stacked > 0]
     df = filtered.reset_index(level=[0, 1])
     df.columns = [
-        target_locations.get_id_column(),
-        enum_locations.get_id_column(),
-        "value",
+        "target_id",
+        "enum_id",
+        "cost",
     ]
 
     return df
