@@ -91,7 +91,7 @@ See [example_pipeline.ipynb](https://github.com/IDinsight/surveyscout/tree/main/
 2. Install requirements in the environment. You must install [`pre-commit`](https://pre-commit.com/) as well.
 
     ```shell
-    conda activate surveysparrow
+    conda activate surveyscout
     pip install -r requirements.txt
     pip install -r requirements_dev.txt
     ```
