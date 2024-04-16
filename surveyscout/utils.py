@@ -1,4 +1,3 @@
-from typing import List
 import numpy as np
 from numpy.typing import NDArray
 from pathlib import Path
@@ -99,11 +98,3 @@ def haversine(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     distance = R * c
 
     return distance
-
-
-def get_percentile_distance(
-    cost_matrix: NDArray | List[List], max_perc: float
-) -> float:
-    """Get the maximum distance from the cost matrix by computing percentile ."""
-    max_distance = np.percentile(cost_matrix, max_perc)
-    return max_distance
