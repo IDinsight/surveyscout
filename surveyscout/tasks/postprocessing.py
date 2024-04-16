@@ -1,7 +1,16 @@
+from typing import List
+from numpy.typing import NDArray
 import pandas as pd
 
+from surveyscout.utils import LocationDataset
 
-def postprocess_results(results, enum_locations, target_locations, **kwargs):
+
+def postprocess_results(
+    results: NDArray | List[List],
+    enum_locations: LocationDataset,
+    target_locations: LocationDataset,
+    **kwargs,
+) -> pd.DataFrame:
     """
     Processes the raw results from the optimization model, converting them into a
     pandas DataFrame format.

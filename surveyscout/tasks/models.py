@@ -1,16 +1,18 @@
-import numpy as np
-from ortools.linear_solver import pywraplp
+from typing import Tuple
 
-from optimization.utils import get_percentile_distance
+import numpy as np
+from numpy.typing import NDArray
+import pandas as pd
+from ortools.linear_solver import pywraplp
 
 
 def min_target_optimization_model(
-    cost_matrix,
-    min_target,
-    max_target,
-    max_cost,
-    max_total_cost,
-):
+    cost_matrix: pd.DataFrame,
+    min_target: int,
+    max_target: int,
+    max_cost: float,
+    max_total_cost: float,
+) -> NDArray | None:
     """
     Formulate and solve an optimization model to assign targets to surveyors while
     minimizing total cost subject to specific constraints.
@@ -100,13 +102,13 @@ def min_target_optimization_model(
 
 
 def recursive_min_target_optimization(
-    cost_matrix,
-    min_target,
-    max_target,
-    max_cost,
-    max_total_cost,
-    param_increment=5,
-):
+    cost_matrix: pd.DataFrame,
+    min_target: int,
+    max_target: int,
+    max_cost: float,
+    max_total_cost: float,
+    param_increment: int | float = 5,
+) -> Tuple[NDArray | None, dict]:
     """
     Recursively optimize the minimum targeting constraints using the `min_target_optimization_model`
     model, adjusting parameters incrementally until a solution is found
@@ -168,8 +170,8 @@ def recursive_min_target_optimization(
     elif min_target > 0:
         return recursive_min_target_optimization(
             cost_matrix,
-            min_target=min_target * (1 - param_increment / 100),
-            max_target=max_target * (1 + param_increment / 100),
+            min_target=int(np.around(min_target * (1 - param_increment / 100))),
+            max_target=int(np.around(max_target * (1 + param_increment / 100))),
             max_cost=max_cost * (1 + param_increment / 100),
             max_total_cost=max_total_cost * (1 + param_increment / 100),
         )
