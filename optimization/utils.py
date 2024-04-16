@@ -103,3 +103,26 @@ def get_percentile_distance(cost_matrix, max_perc):
     """Get the maximum distance from the cost matrix by computing percentile ."""
     max_distance = np.percentile(cost_matrix, max_perc)
     return max_distance
+
+
+def format_coords_into_string_google(coords):
+    """Formats GPS coordinates into string as required by Google Distance Matrix API
+
+    Parameters
+    ----------
+    coords : np.array
+        numpy array of shape (2, n) representing latitude longitude pairs
+
+    Returns
+    -------
+    str
+        formatted string of GPS coordinates
+    """
+    return "|".join(map(lambda x: str(x[0]) + "," + str(x[1]), coords))
+
+
+def format_url_with_coords_osrm(url, coords):
+    """Formats URL with GPS coordinates for OSRM API"""
+    coord_str = ";".join([f"{x[0]},{x[1]}" for x in coords])
+    url = url + coord_str + "?sources=0&annotations=distance,duration"
+    return url
