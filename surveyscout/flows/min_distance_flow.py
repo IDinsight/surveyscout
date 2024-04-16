@@ -1,19 +1,24 @@
-from optimization.tasks.preprocessing import get_enum_target_haversine_matrix
-from optimization.tasks.models import (
+from typing import Dict, Union, Tuple
+import pandas as pd
+
+
+from surveyscout.tasks.preprocessing import get_enum_target_haversine_matrix
+from surveyscout.tasks.models import (
     min_target_optimization_model,
     recursive_min_target_optimization,
 )
-from optimization.tasks.postprocessing import postprocess_results
+from surveyscout.tasks.postprocessing import postprocess_results
+from surveyscout.utils import LocationDataset
 
 
 def basic_min_distance_flow(
-    enum_locations,
-    target_locations,
-    min_target,
-    max_target,
-    max_distance,
-    max_total_distance,
-):
+    enum_locations: LocationDataset,
+    target_locations: LocationDataset,
+    min_target: int,
+    max_target: int,
+    max_distance: float,
+    max_total_distance: float,
+) -> pd.DataFrame:
     """
     Executes a basic flow for mapping enumerators to targets with the objective of minimizing
     the total distance traveled, while respecting the given targets and distance constraints.
@@ -73,14 +78,14 @@ def basic_min_distance_flow(
 
 
 def recursive_optimization_flow(
-    enum_locations,
-    target_locations,
-    min_target,
-    max_target,
-    max_distance,
-    max_total_distance,
-    param_increment=5,
-):
+    enum_locations: LocationDataset,
+    target_locations: LocationDataset,
+    min_target: int,
+    max_target: int,
+    max_distance: float,
+    max_total_distance: float,
+    param_increment: Union[int, float] = 5,
+) -> Tuple[pd.DataFrame, Dict]:
     """
     Implements the recursive min target optimization model.
 
@@ -109,13 +114,13 @@ def recursive_optimization_flow(
     max_total_distance : float
         The maximum total distance each enumerator can travel to visit targets.
 
-    param_increment : int, optional
+    param_increment : int
        The percentage increment used to adjust parameter values during the optimization
        recursion if a solution cannot be found. Defaults to 5.
 
     Returns
     -------
-    tuple
+    (pd.DataFrame, Dict)
         A tuple containing two elements: the first being the post-processed results of the target assignments,
         and the second a dictionary of the parameters that led to a solution.
     ```

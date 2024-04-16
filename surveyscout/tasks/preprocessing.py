@@ -1,14 +1,14 @@
 import numpy as np
 import pandas as pd
-from optimization.utils import haversine
+from surveyscout.utils import LocationDataset, haversine
 
 
 def get_enum_target_haversine_matrix(
-    enum_locations,
-    target_locations,
+    enum_locations: LocationDataset,
+    target_locations: LocationDataset,
     *args,
     **kwargs,
-):
+) -> pd.DataFrame:
     """
     Get the haversine distance matrix between enumerators and targets.
 
