@@ -1,29 +1,29 @@
-from optimization.tasks.preprocessing import (
-    get_enum_target_haversine_matrix,
-    get_enum_target_matrix_api,
+from surveyscout.tasks.compute_cost import (
+    get_enum_target_osrm_matrix,
 )
-from optimization.tasks.models import (
+from surveyscout.tasks.models import (
     min_target_optimization_model,
     recursive_min_target_optimization,
 )
-from optimization.tasks.postprocessing import postprocess_results
+from surveyscout.tasks.postprocessing import postprocess_results
 
 
-def basic_min_osrm_distance_flow(
+def basic_routed_min_distance_flow(
     enum_locations,
     target_locations,
     min_target,
     max_target,
     max_distance,
     max_total_distance,
+    routing="osrm",
 ):
     """
     Executes a basic flow for mapping enumerators to targets with the objective of minimizing
     the total distance traveled, while respecting the given targets and distance constraints.
 
-    This function computes a Haversine distance matrix between enumerators and target locations,
-    applies an optimization model to find the minimum cost assignment, and then post-processes
-    the optimized assignment matrix to generate actionable results.
+    This function computes a distance matrix between enumerators and target locations using a
+    specified routing API, applies an optimization model to find the minimum cost assignment,
+    and then post-processesthe optimized assignment matrix to generate actionable results.
 
     Parameters
     ----------
@@ -45,6 +45,10 @@ def basic_min_osrm_distance_flow(
     max_total_distance : float
         The maximum total distance each enumerator can travel to visit targets.
 
+    routing : str, optional
+        The routing API to use for calculating the distance matrix. Can be either "osrm" or "google".
+        Defaults to "osrm".
+
     Returns
     -------
     results : pd.DataFrame
@@ -54,9 +58,12 @@ def basic_min_osrm_distance_flow(
 
     """
 
-    matrix_df = get_enum_target_matrix_api(
-        enum_locations=enum_locations, target_locations=target_locations, type="OSRM"
-    )
+    if routing == "osrm":
+        matrix_df = get_enum_target_osrm_matrix(
+            enum_locations=enum_locations, target_locations=target_locations
+        )
+    else:
+        raise ValueError(f"Routing API {routing} is not supported yet.")
 
     results_matrix = min_target_optimization_model(
         cost_matrix=matrix_df.values,
@@ -74,7 +81,7 @@ def basic_min_osrm_distance_flow(
     return results
 
 
-def recursive_optimization_flow(
+def recursive_routed_min_distance_flow(
     enum_locations,
     target_locations,
     min_target,
@@ -82,12 +89,13 @@ def recursive_optimization_flow(
     max_distance,
     max_total_distance,
     param_increment=5,
+    routing="osrm",
 ):
     """
     Implements the recursive min target optimization model.
 
-    This function first calculates the Haversine distance matrix between enumerators and targets. Then,
-    it recursively applies optimization to this matrix until an acceptable solution is found or the
+    This function first calculates the distance matrix between enumerators and targets using a specified API.
+    Then,it recursively applies optimization to this matrix until an acceptable solution is found or the
     constraints are fully relaxed. After finding a solution, it post-processes the results to provide
     actionable output.
 
@@ -114,7 +122,9 @@ def recursive_optimization_flow(
     param_increment : int, optional
        The percentage increment used to adjust parameter values during the optimization
        recursion if a solution cannot be found. Defaults to 5.
-
+    routing : str, optional
+        The routing API to use for calculating the distance matrix. Can be either "osrm" or "google".
+        Defaults to "osrm".
     Returns
     -------
     tuple
@@ -122,10 +132,12 @@ def recursive_optimization_flow(
         and the second a dictionary of the parameters that led to a solution.
     ```
     """
-    matrix_df = get_enum_target_haversine_matrix(
-        enum_locations=enum_locations,
-        target_locations=target_locations,
-    )
+    if routing == "osrm":
+        matrix_df = get_enum_target_osrm_matrix(
+            enum_locations=enum_locations, target_locations=target_locations
+        )
+    else:
+        raise ValueError(f"Routing API {routing} is not supported yet.")
 
     min_possible_max_distance = matrix_df.min(axis=1).max()
 

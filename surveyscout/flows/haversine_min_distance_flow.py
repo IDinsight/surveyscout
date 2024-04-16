@@ -2,7 +2,7 @@ from typing import Dict, Union, Tuple
 import pandas as pd
 
 
-from surveyscout.tasks.preprocessing import get_enum_target_haversine_matrix
+from surveyscout.tasks.compute_cost import get_enum_target_haversine_matrix
 from surveyscout.tasks.models import (
     min_target_optimization_model,
     recursive_min_target_optimization,
@@ -11,7 +11,7 @@ from surveyscout.tasks.postprocessing import postprocess_results
 from surveyscout.utils import LocationDataset
 
 
-def basic_min_distance_flow(
+def basic_haversine_min_distance_flow(
     enum_locations: LocationDataset,
     target_locations: LocationDataset,
     min_target: int,
@@ -77,7 +77,7 @@ def basic_min_distance_flow(
     return results
 
 
-def recursive_optimization_flow(
+def recursive_haversine_min_distance_flow(
     enum_locations: LocationDataset,
     target_locations: LocationDataset,
     min_target: int,
