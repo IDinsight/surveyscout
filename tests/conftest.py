@@ -2,7 +2,6 @@
 
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 import pytest
 from _pytest.monkeypatch import MonkeyPatch
@@ -41,14 +40,3 @@ def target_df():
         gps_lng_column="gps_lon",
     )
     return data
-
-
-@pytest.fixture(scope="session")
-@pytest.mark.parametrize("data_df", [enum_df, target_df])
-def check_data_columns(data_df):
-    """Check test files for appropriate columns."""
-    assert (
-        "gps_lat" in data_df.columns
-        and "gps_lon" in data_df.columns
-        and np.any(["id" == name for name in data_df.columns])
-    )

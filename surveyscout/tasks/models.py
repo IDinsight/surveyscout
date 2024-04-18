@@ -136,7 +136,7 @@ def recursive_min_target_optimization(
     max_total_cost : float
         The initial maximum total cost assignable to a surveyor.
 
-    param_increment : int, optional
+    param_increment : int or float, optional
         The value by which the parameter bounds and percentiles are adjusted during the
         recursion if no solution is found (default is 5).
 
