@@ -1,25 +1,27 @@
+from typing import List, Dict
+
 import numpy as np
 import pandas as pd
-from surveyscout.utils import haversine
+
+from surveyscout.utils import haversine, LocationDataset
 
 
 def get_enum_target_haversine_matrix(
-    enum_locations,
-    target_locations,
-    *args,
-    **kwargs,
-):
+    enum_locations: LocationDataset,
+    target_locations: LocationDataset,
+    *args: List,
+    **kwargs: Dict,
+) -> pd.DataFrame:
     """
     Get the haversine distance matrix between enumerators and targets.
 
     Parameters
     ----------
-    enum_locations : class <LocationDataset>
-        A <LocationDataset> object containing the id and locations of enumerators.
+    enum_locations : LocationDataset
+        A LocationDataset object containing the id and locations of enumerators.
 
-    target_locations : class <LocationDataset>
-        A <LocationDataset> object containing the id and locations of targets, with a similar structure to `enum_locations`.
-
+    target_locations : LocationDataset
+        A LocationDataset object containing the id and locations of targets, with a similar structure to `enum_locations`.
 
     Returns
     -------

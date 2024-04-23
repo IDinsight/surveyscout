@@ -1,10 +1,15 @@
 import numpy as np
+from numpy.typing import NDArray
 import pandas as pd
 import requests
+
 from surveyscout.config import OSRM_URL
+from surveyscout.utils import LocationDataset
 
 
-def get_enum_target_osrm_matrix(enum_locations, target_locations):
+def get_enum_target_osrm_matrix(
+    enum_locations: LocationDataset, target_locations: LocationDataset
+) -> pd.DataFrame:
     """Get the matrix of distances between enumerators and targets using OSRM api.
     This function calls the OSRM /table/v1/driving/ api endpoint to get the matrix
     of distances between enumerators and targets. The distance represents the
@@ -35,7 +40,9 @@ def get_enum_target_osrm_matrix(enum_locations, target_locations):
     return matrix_df
 
 
-def _get_enum_target_matrix_osrm(url, target_coords, enum_coords):
+def _get_enum_target_matrix_osrm(
+    url: str, target_coords: NDArray, enum_coords: NDArray
+) -> NDArray:
     """Get the matrix of distances between enumerators and targets
     using OSRM."""
     matrix = [
@@ -46,7 +53,9 @@ def _get_enum_target_matrix_osrm(url, target_coords, enum_coords):
     return matrix
 
 
-def _get_unique_target_enum_row_osrm(url, target_coord, enum_coords):
+def _get_unique_target_enum_row_osrm(
+    url: str, target_coord: NDArray, enum_coords: NDArray
+) -> NDArray:
     """Get the row of the matrix for a target coordinate."""
     coords = np.insert(enum_coords, 0, target_coord, axis=0)
     url = _format_url_with_coords_osrm(url, coords)
@@ -59,7 +68,7 @@ def _get_unique_target_enum_row_osrm(url, target_coord, enum_coords):
         return []
 
 
-def _format_url_with_coords_osrm(url, coords):
+def _format_url_with_coords_osrm(url: str, coords: NDArray) -> str:
     """Formats URL with GPS coordinates for OSRM API"""
     coord_str = ";".join([f"{x[1]},{x[0]}" for x in coords])
     url = url + coord_str + "?sources=0&annotations=distance,duration"
