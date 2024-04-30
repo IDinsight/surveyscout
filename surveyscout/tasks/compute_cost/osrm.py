@@ -1,3 +1,4 @@
+from typing import List
 import numpy as np
 from numpy.typing import NDArray
 import pandas as pd
@@ -28,6 +29,7 @@ def get_enum_target_osrm_matrix(
     -------
     pd.DataFrame
         distance matrix between enumerators and targets.
+        Columns are enumerator IDs, rows are target IDs.
     """
     enums_coords = enum_locations.get_gps_coords()
     targets_coords = target_locations.get_gps_coords()
@@ -42,7 +44,7 @@ def get_enum_target_osrm_matrix(
 
 def _get_enum_target_matrix_osrm(
     url: str, target_coords: NDArray, enum_coords: NDArray
-) -> NDArray:
+) -> NDArray | List:
     """Get the matrix of distances between enumerators and targets
     using OSRM."""
     matrix = [
@@ -55,7 +57,7 @@ def _get_enum_target_matrix_osrm(
 
 def _get_unique_target_enum_row_osrm(
     url: str, target_coord: NDArray, enum_coords: NDArray
-) -> NDArray:
+) -> NDArray | List:
     """Get the row of the matrix for a target coordinate."""
     coords = np.insert(enum_coords, 0, target_coord, axis=0)
     url = _format_url_with_coords_osrm(url, coords)

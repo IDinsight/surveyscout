@@ -6,7 +6,7 @@ from surveyscout.utils import LocationDataset
 
 
 def postprocess_results(
-    results: NDArray | List[List],
+    results: NDArray | List[List] | None,
     enum_locations: LocationDataset,
     target_locations: LocationDataset,
     enum_target_cost_matrix: NDArray | None = None,

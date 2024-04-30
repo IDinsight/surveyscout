@@ -1,4 +1,3 @@
-import numpy as np
 from numpy.typing import NDArray
 from pathlib import Path
 
@@ -26,13 +25,13 @@ class LocationDataset(object):
     def get_ids(self) -> NDArray:
         return self.df[self.id_column].values
 
-    def get_id_column(self) -> NDArray:
+    def get_id_column(self) -> str:
         return self.id_column
 
     def get_gps_coords(self) -> NDArray:
         return self.df[[self.gps_lat_column, self.gps_lng_column]].values
 
-    def get_gps_columns(self) -> NDArray:
+    def get_gps_columns(self) -> tuple[str, str]:
         return (self.gps_lat_column, self.gps_lng_column)
 
     def create_subset(self, new_df: pd.DataFrame):
@@ -75,31 +74,3 @@ def validate_data_config(locations: LocationDataset) -> bool:
     assert df[gps_columns[1]].max() <= 180
 
     return True
-
-
-def haversine(
-    lat1: float | NDArray,
-    lon1: float | NDArray,
-    lat2: float | NDArray,
-    lon2: float | NDArray,
-) -> float | NDArray:
-    """Compute the haversine distance between two GPS coordinates."""
-    R = 6371.0
-
-    # convert decimal degrees to radians
-    lat1_rad = np.radians(lat1)
-    lon1_rad = np.radians(lon1)
-    lat2_rad = np.radians(lat2)
-    lon2_rad = np.radians(lon2)
-    # Haversine formula
-    dlat = lat2_rad - lat1_rad
-    dlon = lon2_rad - lon1_rad
-    a = (
-        np.sin(dlat / 2.0) ** 2
-        + np.cos(lat1_rad) * np.cos(lat2_rad) * np.sin(dlon / 2.0) ** 2
-    )
-    c = 2 * np.arctan2(np.sqrt(a), np.sqrt(1 - a))
-
-    distance = R * c
-
-    return distance

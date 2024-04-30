@@ -22,14 +22,14 @@ def basic_min_distance_flow(
     max_target: int,
     max_distance: float,
     max_total_distance: float,
-    routing="haversine",
+    cost_function="haversine",
 ) -> pd.DataFrame:
     """
     Executes a basic flow for mapping enumerators to targets with the objective of
     minimizing the total distance traveled, while respecting the given targets and
     distance constraints.
 
-    This function computes a Haversine distance matrix between enumerators and target
+    This function computes a distance matrix between enumerators and target
     locations using a specified routing method, applies an optimization model to find
     the minimum cost assignment, and then post-processesthe optimized assignment matrix
     to generate actionable results.
@@ -54,8 +54,8 @@ def basic_min_distance_flow(
     max_total_distance : float
         The maximum total distance each enumerator can travel to visit targets.
 
-    routing : str
-        The routing method to use for calculating the distance matrix.
+    cost_function : str
+        The cost function to use for calculating the distance matrix.
         Can be "haversine", "osrm".
         Defaults to "haversine".
     Returns
@@ -66,20 +66,18 @@ def basic_min_distance_flow(
 
 
     """
-    if routing == "haversine":
-        matrix_df = get_enum_target_haversine_matrix(
-            enum_locations=enum_locations,
-            target_locations=target_locations,
-        )
-    elif routing == "osrm":
-        matrix_df = get_enum_target_osrm_matrix(
-            enum_locations=enum_locations, target_locations=target_locations
-        )
+    if cost_function == "haversine":
+        cost_func = get_enum_target_haversine_matrix
+    elif cost_function == "osrm":
+        cost_func = get_enum_target_osrm_matrix
     else:
         raise ValueError(
             "Invalid routing method. Please choose from 'haversine' or 'osrm'."
         )
 
+    matrix_df = cost_func(
+        enum_locations=enum_locations, target_locations=target_locations
+    )
     results_matrix = min_target_optimization_model(
         cost_matrix=matrix_df.values,
         min_target=min_target,
@@ -103,7 +101,7 @@ def recursive_min_distance_flow(
     max_target: int,
     max_distance: float,
     max_total_distance: float,
-    routing="haversine",
+    cost_function="haversine",
     param_increment: Union[int, float] = 5,
 ) -> Tuple[pd.DataFrame, Dict]:
     """
@@ -136,8 +134,8 @@ def recursive_min_distance_flow(
     max_total_distance : float
         The maximum total distance each enumerator can travel to visit targets.
 
-    routing : str
-        The routing method to use for calculating the distance matrix.
+    cost_function : str
+        The cost function method to use for calculating the distance matrix.
         Can be "haversine", "osrm" or "google".
         Defaults to "haversine".
     param_increment : int
@@ -151,27 +149,25 @@ def recursive_min_distance_flow(
         and the second a dictionary of the parameters that led to a solution.
     ```
     """
-    if routing == "haversine":
-        distance_df = get_enum_target_haversine_matrix(
-            enum_locations=enum_locations,
-            target_locations=target_locations,
-        )
-    elif routing == "osrm":
-        distance_df = get_enum_target_osrm_matrix(
-            enum_locations=enum_locations, target_locations=target_locations
-        )
+    if cost_function == "haversine":
+        cost_func = get_enum_target_haversine_matrix
+    elif cost_function == "osrm":
+        cost_func = get_enum_target_osrm_matrix
     else:
         raise ValueError(
             "Invalid routing method. Please choose from 'haversine' or 'osrm'."
         )
 
-    min_possible_max_distance = distance_df.min(axis=1).max()
+    matrix_df = cost_func(
+        enum_locations=enum_locations, target_locations=target_locations
+    )
+    min_possible_max_distance = matrix_df.min(axis=1).max()
 
     if max_distance <= min_possible_max_distance:
         max_distance = min_possible_max_distance
 
     results_matrix, params = recursive_min_target_optimization(
-        cost_matrix=distance_df.values,
+        cost_matrix=matrix_df.values,
         min_target=min_target,
         max_target=max_target,
         max_cost=max_distance,

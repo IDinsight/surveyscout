@@ -1,9 +1,10 @@
 from typing import List, Dict
 
 import numpy as np
+from numpy.typing import NDArray
 import pandas as pd
 
-from surveyscout.utils import haversine, LocationDataset
+from surveyscout.utils import LocationDataset
 
 
 def get_enum_target_haversine_matrix(
@@ -13,7 +14,8 @@ def get_enum_target_haversine_matrix(
     **kwargs: Dict,
 ) -> pd.DataFrame:
     """
-    Get the haversine distance matrix between enumerators and targets.
+    Haversine distance matrix between enumerators and targets.
+
 
     Parameters
     ----------
@@ -27,6 +29,7 @@ def get_enum_target_haversine_matrix(
     -------
     pd.DataFrame
         Haversine distance matrix between enumerators and targets.
+        Columns are enumerator IDs, rows are target IDs.
     """
     targets_lat = target_locations.get_gps_coords()[:, 0]
     targets_long = target_locations.get_gps_coords()[:, 1]
@@ -40,3 +43,31 @@ def get_enum_target_haversine_matrix(
         matrix, index=target_locations.get_ids(), columns=enum_locations.get_ids()
     )
     return matrix_df
+
+
+def haversine(
+    lat1: float | NDArray,
+    lon1: float | NDArray,
+    lat2: float | NDArray,
+    lon2: float | NDArray,
+) -> float | NDArray:
+    """Compute the haversine distance between two GPS coordinates."""
+    R = 6371.0
+
+    # convert decimal degrees to radians
+    lat1_rad = np.radians(lat1)
+    lon1_rad = np.radians(lon1)
+    lat2_rad = np.radians(lat2)
+    lon2_rad = np.radians(lon2)
+    # Haversine formula
+    dlat = lat2_rad - lat1_rad
+    dlon = lon2_rad - lon1_rad
+    a = (
+        np.sin(dlat / 2.0) ** 2
+        + np.cos(lat1_rad) * np.cos(lat2_rad) * np.sin(dlon / 2.0) ** 2
+    )
+    c = 2 * np.arctan2(np.sqrt(a), np.sqrt(1 - a))
+
+    distance = R * c
+
+    return distance
