@@ -97,6 +97,13 @@ Follow the [official
    documentation](https://github.com/Project-OSRM/osrm-backend?tab=readme-ov-file#quick-start)
    to run an OSRM docker container.
 
+By default, surveyscout expects the OSRM endpoint at `http://localhost:5001` (see
+`surveyscount/config.py` for default value.) If your OSRM server is at a different
+endpoint, make sure to export it as environment variable:
+
+```shell
+export OSRM_URL=<your OSRM endpoint>
+```
 
 ### Using `google` cost function
 
