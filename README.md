@@ -91,6 +91,13 @@ This cost will often be the travel distance or travel duration.
 | `osrm`     | Calculates the road distance based on OpenStreetMaps. Uses [OSRM](https://github.com/Project-OSRM/osrm-backend) at the back. | Less expensive than `google` option but does not consider traffic or travel duration. |
 | `google`        | Calculates travel duration considering road networks, terrain, and traffic based on [Google Maps Plaform's Distance Matrix API](https://developers.google.com/maps/documentation/distance-matrix). | Requires Google Maps Platform's API key (`GOOGLE_MAPS_PLATFORM_API_KEY`) that has access to the Distance Matrix API. Cost will be USD `n_surveyors` x `n_targets` x 0.005.|
 
+### Using `osrm` cost function
+
+Follow the [official
+   documentation](https://github.com/Project-OSRM/osrm-backend?tab=readme-ov-file#quick-start)
+   to run an OSRM docker container.
+
+
 ### Using `google` cost function
 
 Use Google distance (travel duration) if you know that Google Maps works well in
