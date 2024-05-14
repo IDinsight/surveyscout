@@ -16,12 +16,16 @@ from surveyscout.utils import LocationDataset
 
 logger = logging.getLogger(__name__)
 
-MAX_ELEMENTS_PER_SECOND = 1000
-MAX_ELEMENTS_PER_REQUEST = 25
-WAIT = MAX_ELEMENTS_PER_REQUEST / MAX_ELEMENTS_PER_SECOND
 
-MAX_ORIG = 4
+# Request limits as per https://developers.google.com/maps/documentation/distance-matrix/usage-and-billing
 MAX_DEST = 25
+MAX_ELEMENTS_PER_REQUEST = 100
+MAX_ORIG = MAX_ELEMENTS_PER_REQUEST // MAX_DEST
+# Since there are more targets (destinations) than enumerators (origins), we use
+# MAX_DEST = 25 and MAX_ORIG = 4 to arrive at MAX_ELEMENTS_PER_REQUEST = 100
+
+MAX_ELEMENTS_PER_SECOND = 1000  # 60000 EPM / 60 seconds
+WAIT = MAX_ELEMENTS_PER_REQUEST / MAX_ELEMENTS_PER_SECOND  # TODO: use in logic
 
 
 def get_enum_target_google_distance_matrix(
@@ -146,10 +150,9 @@ def _get_google_distance_matrix(
     dict
         Response JSON
     """
-    # Request limits as per https://developers.google.com/maps/documentation/distance-matrix/usage-and-billing
-    assert len(origin_coords) <= 25
-    assert len(destination_coords) <= 25
-    assert len(origin_coords) * len(destination_coords) <= 100
+    assert len(origin_coords) <= MAX_ORIG
+    assert len(destination_coords) <= MAX_DEST
+    assert len(origin_coords) * len(destination_coords) <= MAX_ELEMENTS_PER_REQUEST
 
     formatted_orig_locations = _format_coords_into_string(origin_coords)
     formatted_dest_locations = _format_coords_into_string(destination_coords)
