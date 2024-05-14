@@ -68,19 +68,24 @@ def basic_min_distance_flow(
 
     """
     if cost_function == "haversine":
-        cost_func = get_enum_target_haversine_matrix
+        matrix_df = get_enum_target_haversine_matrix(
+            enum_locations=enum_locations, target_locations=target_locations
+        )
     elif cost_function == "osrm":
-        cost_func = get_enum_target_osrm_matrix
+        matrix_df = get_enum_target_osrm_matrix(
+            enum_locations=enum_locations, target_locations=target_locations
+        )
     elif cost_function == "google":
-        cost_func = get_enum_target_google_distance_matrix
+        matrix_df = get_enum_target_google_distance_matrix(
+            enum_locations=enum_locations,
+            target_locations=target_locations,
+            value="duration",
+        )
     else:
         raise ValueError(
             "Invalid routing method. Please choose from 'haversine' or 'osrm'."
         )
 
-    matrix_df = cost_func(
-        enum_locations=enum_locations, target_locations=target_locations
-    )
     results_matrix = min_target_optimization_model(
         cost_matrix=matrix_df.values,
         min_target=min_target,
