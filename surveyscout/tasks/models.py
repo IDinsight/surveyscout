@@ -1,5 +1,4 @@
 from typing import Tuple
-
 import numpy as np
 from numpy.typing import NDArray
 from ortools.linear_solver import pywraplp

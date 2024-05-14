@@ -1,8 +1,12 @@
 from typing import Dict, Union, Tuple
+
 import pandas as pd
 
 
-from surveyscout.tasks.preprocessing import get_enum_target_haversine_matrix
+from surveyscout.tasks.compute_cost import (
+    get_enum_target_haversine_matrix,
+    get_enum_target_osrm_matrix,
+)
 from surveyscout.tasks.models import (
     min_target_optimization_model,
     recursive_min_target_optimization,
@@ -18,14 +22,17 @@ def basic_min_distance_flow(
     max_target: int,
     max_distance: float,
     max_total_distance: float,
+    cost_function="haversine",
 ) -> pd.DataFrame:
     """
-    Executes a basic flow for mapping enumerators to targets with the objective of minimizing
-    the total distance traveled, while respecting the given targets and distance constraints.
+    Executes a basic flow for mapping enumerators to targets with the objective of
+    minimizing the total distance traveled, while respecting the given targets and
+    distance constraints.
 
-    This function computes a Haversine distance matrix between enumerators and target locations,
-    applies an optimization model to find the minimum cost assignment, and then post-processes
-    the optimized assignment matrix to generate actionable results.
+    This function computes a distance matrix between enumerators and target
+    locations using a specified routing method, applies an optimization model to find
+    the minimum cost assignment, and then post-processesthe optimized assignment matrix
+    to generate actionable results.
 
     Parameters
     ----------
@@ -47,6 +54,10 @@ def basic_min_distance_flow(
     max_total_distance : float
         The maximum total distance each enumerator can travel to visit targets.
 
+    cost_function : str
+        The cost function to use for calculating the distance matrix.
+        Can be "haversine", "osrm".
+        Defaults to "haversine".
     Returns
     -------
     results : pd.DataFrame
@@ -55,12 +66,18 @@ def basic_min_distance_flow(
 
 
     """
+    if cost_function == "haversine":
+        cost_func = get_enum_target_haversine_matrix
+    elif cost_function == "osrm":
+        cost_func = get_enum_target_osrm_matrix
+    else:
+        raise ValueError(
+            "Invalid routing method. Please choose from 'haversine' or 'osrm'."
+        )
 
-    matrix_df = get_enum_target_haversine_matrix(
-        enum_locations=enum_locations,
-        target_locations=target_locations,
+    matrix_df = cost_func(
+        enum_locations=enum_locations, target_locations=target_locations
     )
-
     results_matrix = min_target_optimization_model(
         cost_matrix=matrix_df.values,
         min_target=min_target,
@@ -77,21 +94,24 @@ def basic_min_distance_flow(
     return results
 
 
-def recursive_optimization_flow(
+def recursive_min_distance_flow(
     enum_locations: LocationDataset,
     target_locations: LocationDataset,
     min_target: int,
     max_target: int,
     max_distance: float,
     max_total_distance: float,
+    cost_function="haversine",
     param_increment: Union[int, float] = 5,
 ) -> Tuple[pd.DataFrame, Dict]:
     """
     Implements the recursive min target optimization model.
 
-    This function first calculates the Haversine distance matrix between enumerators and targets. Then,
-    it recursively applies optimization to this matrix until an acceptable solution is found or the
-    constraints are fully relaxed. After finding a solution, it post-processes the results to provide
+    This function first calculates the  distance matrix between enumerators
+    and targets using aspecified routing API. Then,it recursively applies
+    optimization to this matrix until an acceptable solution is found or the
+    constraints are fully relaxed. After finding a solution, it post-processes
+    the results to provide
     actionable output.
 
     Parameters
@@ -114,6 +134,10 @@ def recursive_optimization_flow(
     max_total_distance : float
         The maximum total distance each enumerator can travel to visit targets.
 
+    cost_function : str
+        The cost function method to use for calculating the distance matrix.
+        Can be "haversine", "osrm" or "google".
+        Defaults to "haversine".
     param_increment : int
        The percentage increment used to adjust parameter values during the optimization
        recursion if a solution cannot be found. Defaults to 5.
@@ -125,12 +149,19 @@ def recursive_optimization_flow(
         and the second a dictionary of the parameters that led to a solution.
     ```
     """
-    distance_df = get_enum_target_haversine_matrix(
-        enum_locations=enum_locations,
-        target_locations=target_locations,
-    )
+    if cost_function == "haversine":
+        cost_func = get_enum_target_haversine_matrix
+    elif cost_function == "osrm":
+        cost_func = get_enum_target_osrm_matrix
+    else:
+        raise ValueError(
+            "Invalid routing method. Please choose from 'haversine' or 'osrm'."
+        )
 
-    min_possible_max_distance = distance_df.min(axis=1).max()
+    matrix_df = cost_func(
+        enum_locations=enum_locations, target_locations=target_locations
+    )
+    min_possible_max_distance = matrix_df.min(axis=1).max()
 
     if max_distance <= min_possible_max_distance:
         max_distance = min_possible_max_distance
