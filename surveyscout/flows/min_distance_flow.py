@@ -6,6 +6,7 @@ import pandas as pd
 from surveyscout.tasks.compute_cost import (
     get_enum_target_haversine_matrix,
     get_enum_target_osrm_matrix,
+    get_enum_target_google_distance_matrix,
 )
 from surveyscout.tasks.models import (
     min_target_optimization_model,
@@ -56,7 +57,7 @@ def basic_min_distance_flow(
 
     cost_function : str
         The cost function to use for calculating the distance matrix.
-        Can be "haversine", "osrm".
+        Can be "haversine", "osrm", or "google".
         Defaults to "haversine".
     Returns
     -------
@@ -70,6 +71,8 @@ def basic_min_distance_flow(
         cost_func = get_enum_target_haversine_matrix
     elif cost_function == "osrm":
         cost_func = get_enum_target_osrm_matrix
+    elif cost_function == "google":
+        cost_func = get_enum_target_google_distance_matrix
     else:
         raise ValueError(
             "Invalid routing method. Please choose from 'haversine' or 'osrm'."
@@ -136,8 +139,9 @@ def recursive_min_distance_flow(
 
     cost_function : str
         The cost function method to use for calculating the distance matrix.
-        Can be "haversine", "osrm" or "google".
+        Can be "haversine", "osrm", or "google".
         Defaults to "haversine".
+
     param_increment : int
        The percentage increment used to adjust parameter values during the optimization
        recursion if a solution cannot be found. Defaults to 5.
@@ -150,24 +154,31 @@ def recursive_min_distance_flow(
     ```
     """
     if cost_function == "haversine":
-        cost_func = get_enum_target_haversine_matrix
+        matrix_df = get_enum_target_haversine_matrix(
+            enum_locations=enum_locations, target_locations=target_locations
+        )
     elif cost_function == "osrm":
-        cost_func = get_enum_target_osrm_matrix
+        matrix_df = get_enum_target_osrm_matrix(
+            enum_locations=enum_locations, target_locations=target_locations
+        )
+    elif cost_function == "google":
+        matrix_df = get_enum_target_google_distance_matrix(
+            enum_locations=enum_locations,
+            target_locations=target_locations,
+            value="duration",
+        )
     else:
         raise ValueError(
             "Invalid routing method. Please choose from 'haversine' or 'osrm'."
         )
 
-    matrix_df = cost_func(
-        enum_locations=enum_locations, target_locations=target_locations
-    )
     min_possible_max_distance = matrix_df.min(axis=1).max()
 
     if max_distance <= min_possible_max_distance:
         max_distance = min_possible_max_distance
 
     results_matrix, params = recursive_min_target_optimization(
-        cost_matrix=distance_df.values,
+        cost_matrix=matrix_df.values,
         min_target=min_target,
         max_target=max_target,
         max_cost=max_distance,
