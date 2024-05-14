@@ -167,7 +167,7 @@ def recursive_min_distance_flow(
         max_distance = min_possible_max_distance
 
     results_matrix, params = recursive_min_target_optimization(
-        cost_matrix=matrix_df.values,
+        cost_matrix=distance_df.values,
         min_target=min_target,
         max_target=max_target,
         max_cost=max_distance,
