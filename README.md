@@ -25,12 +25,13 @@ a pandas dataframe `enum_df`:
 | ⋮        | ⋮                        | ⋮            | ⋮             |
 
 and `target_df`:
-|target*uid|target_name|gps_latitude|gps_longitude|
-|--|--|--|--|
-|0|\_Baobab*| 82.9514 | 138.3652 |
-|1|_Banyan_| 76.7823 | 160.2401 |
-|2|_Ginkgo_| 84.1256 | 32.7890 |
-|⋮|⋮|⋮|⋮|
+
+| target_uid | target_name | gps_latitude | gps_longitude |
+| ---------- | ----------- | ------------ | ------------- |
+| 0          | _Baobab_    | 82.9514      | 138.3652      |
+| 1          | _Banyan_    | 76.7823      | 160.2401      |
+| 2          | _Ginkgo_    | 84.1256      | 32.7890       |
+| ⋮          | ⋮           | ⋮            | ⋮             |
 
 We create `LocationDataset` instances for surveyors and targets:
 
