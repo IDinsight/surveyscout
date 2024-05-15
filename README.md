@@ -48,8 +48,8 @@ the constraint parameters:
 
 - `min_target`: The minimum number of targets each surveyor is required to visit.
 - `max_target`: The maximum number of targets each surveyor is allowed to visit.
-- `max_distance`: The maximum distance assignable to a surveyor to visit a single target.
-- `max_total_distance`: The initial maximum total distance assignable to a surveyor.
+- `max_cost`: The maximum cost assignable to a surveyor to visit a single target.
+- `max_total_cost`: The initial maximum total cost assignable to a surveyor.
 
 ```python
 from surveyscout.flows import basic_min_distance_flow
@@ -59,8 +59,8 @@ assignments = basic_min_distance_flow(
     target_locations=targets,
     min_target=5,
     max_target=30,
-    max_distance=10000,
-    max_total_distance= 100000
+    max_cost=10000,
+    max_total_cost= 100000
 )
 ```
 
