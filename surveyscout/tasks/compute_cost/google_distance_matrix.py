@@ -1,4 +1,4 @@
-"""Computing distances using Google Distance Matrix API."""
+"""Compute distances or travel duration using Google Distance Matrix API."""
 
 from typing import List
 import logging
@@ -17,7 +17,8 @@ from surveyscout.utils import LocationDataset
 logger = logging.getLogger(__name__)
 
 
-# Request limits as per https://developers.google.com/maps/documentation/distance-matrix/usage-and-billing
+# Request limits as per
+# https://developers.google.com/maps/documentation/distance-matrix/usage-and-billing
 MAX_DEST = 25
 MAX_ELEMENTS_PER_REQUEST = 100
 MAX_ORIG = MAX_ELEMENTS_PER_REQUEST // MAX_DEST
@@ -205,7 +206,8 @@ def _parse_google_distance_matrix_response(
 
     if response_json["status"] != "OK":
         logger.warning(
-            f"Response status not OK for origins {orig_ids} and destinations {dest_ids}.\n Response status={response_json['status']}"
+            f"Response status={response_json['status']} for "
+            f"origins {orig_ids} and destinations {dest_ids}."
         )
 
         for col in columns:
@@ -256,7 +258,10 @@ def _generate_google_enum_target_request_pairs(n_orig: int, n_dest: int):
     Returns
     -------
     Generator[orig_idx_slice, dest_idx_slice]
-        where each (orig_idx_slice, dest_idx_slice) pair is formed such that the request limit is not exceeded (https://developers.google.com/maps/documentation/distance-matrix/usage-and-billing)
+        where each (orig_idx_slice, dest_idx_slice) pair is formed such that the
+        request limit is not exceeded (
+        https://developers.google.com/maps/documentation/distance-matrix/usage-and-billing
+        )
     """
     n_orig_groups = int(np.ceil(n_orig / MAX_ORIG))
     n_dest_groups = int(np.ceil(n_dest / MAX_DEST))
