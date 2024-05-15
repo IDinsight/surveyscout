@@ -20,7 +20,7 @@ def monkeypatch():
 
 
 @pytest.fixture(scope="session")
-def enum_df():
+def enum_locs():
     """Load test enumerator file."""
     df = pd.read_csv(Path(__file__).parent / "data/test_enum_data.csv")
     data = LocationDataset(
@@ -33,7 +33,7 @@ def enum_df():
 
 
 @pytest.fixture(scope="session")
-def target_df():
+def target_locs():
     """Load test target file."""
     df = pd.read_csv(Path(__file__).parent / "data/test_target_data.csv")
     data = LocationDataset(
@@ -75,4 +75,31 @@ def patch_osrm_call(monkeysession: pytest.MonkeyPatch) -> None:
     monkeysession.setattr(
         "surveyscout.tasks.compute_cost.osrm._get_enum_target_matrix_osrm",
         mock_return_matrix,
+    )
+
+
+success_element = {
+    "distance": {"text": "23.8 km", "value": 23829},
+    "duration": {"text": "44 mins", "value": 2629},
+    "status": "OK",
+}
+
+
+def mock_get_google_distance_matrix(origins: NDArray, destinations: NDArray) -> dict:
+    """Mock Google Distance Matrix API response."""
+    n_orig = len(origins)
+    n_dest = len(destinations)
+    elements = [success_element] * n_dest
+    rows = [{"elements": elements}] * n_orig
+    return {"rows": rows, "status": "OK"}
+
+
+@pytest.fixture(scope="session", autouse=True)
+def patch_google_distance_matrix(monkeysession: pytest.MonkeyPatch) -> None:
+    """
+    Monkeypatch call Google Distance Matrix API.
+    """
+    monkeysession.setattr(
+        "surveyscout.tasks.compute_cost.google_distance_matrix._get_google_distance_matrix",
+        mock_get_google_distance_matrix,
     )

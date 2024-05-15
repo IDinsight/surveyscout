@@ -9,7 +9,8 @@ from surveyscout.utils import LocationDataset
 
 
 def get_enum_target_osrm_matrix(
-    enum_locations: LocationDataset, target_locations: LocationDataset
+    enum_locations: LocationDataset,
+    target_locations: LocationDataset,
 ) -> pd.DataFrame:
     """Get the matrix of distances between enumerators and targets using OSRM api.
     This function calls the OSRM /table/v1/driving/ api endpoint to get the matrix
@@ -23,7 +24,6 @@ def get_enum_target_osrm_matrix(
     target_locations : class <LocationDataset>
         A <LocationDataset> object containing the id and locations of targets,
          with a similar structure to `enum_locations`.
-
 
     Returns
     -------

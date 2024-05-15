@@ -1,5 +1,3 @@
-from typing import List, Dict
-
 import numpy as np
 from numpy.typing import NDArray
 import pandas as pd
@@ -10,8 +8,6 @@ from surveyscout.utils import LocationDataset
 def get_enum_target_haversine_matrix(
     enum_locations: LocationDataset,
     target_locations: LocationDataset,
-    *args: List,
-    **kwargs: Dict,
 ) -> pd.DataFrame:
     """
     Haversine distance matrix between enumerators and targets.
