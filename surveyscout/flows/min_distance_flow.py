@@ -1,5 +1,6 @@
 from typing import Dict, Union, Tuple
 import pandas as pd
+import logging
 
 
 from surveyscout.tasks.compute_cost import (
@@ -121,10 +122,14 @@ def basic_min_distance_flow(
         max_total_cost=max_total_cost,
     )
 
+    if results_matrix is None:
+        raise ValueError("No solution found. Please relax constraints.")
+
     results = postprocess_results(
-        results=results_matrix,
+        assignment_matrix=results_matrix,
         enum_locations=enum_locations,
         target_locations=target_locations,
+        enum_target_cost_matrix=cost_matrix,
     )
     return results
 
@@ -207,9 +212,14 @@ def recursive_min_distance_flow(
         param_increment=param_increment,
     )
 
+    if results_matrix is None:
+        logging.warning("No solution found. Please relax constraints.")
+        return None, params
+
     results = postprocess_results(
-        results=results_matrix,
+        assignment_matrix=results_matrix,
         enum_locations=enum_locations,
         target_locations=target_locations,
+        enum_target_cost_matrix=cost_matrix,
     )
     return results, params
