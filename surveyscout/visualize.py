@@ -5,26 +5,6 @@ import pandas as pd
 from surveyscout.utils import LocationDataset
 
 
-def compute_center(
-    enum_locations: LocationDataset, target_locations: LocationDataset
-) -> Tuple[float, float]:
-    """Compute center coordinate amongst enumerators and targets"""
-    all_lats = (
-        enum_locations.get_gps_coords()[:, 0].tolist()
-        + target_locations.get_gps_coords()[:, 0].tolist()
-    )
-    all_lons = (
-        enum_locations.get_gps_coords()[:, 1].tolist()
-        + target_locations.get_gps_coords()[:, 1].tolist()
-    )
-
-    min_lat, max_lat = min(all_lats), max(all_lats)
-    min_lon, max_lon = min(all_lons), max(all_lons)
-
-    center = (min_lat + max_lat) / 2, (min_lon + max_lon) / 2
-    return center
-
-
 def plot_enum_targets(
     enum_locations: LocationDataset, target_locations: LocationDataset
 ) -> folium.Map:
@@ -153,3 +133,23 @@ def plot_assignments(
     map.add_child(folium.LayerControl())
     map.fit_bounds(map.get_bounds())
     return map
+
+
+def compute_center(
+    enum_locations: LocationDataset, target_locations: LocationDataset
+) -> Tuple[float, float]:
+    """Compute center coordinate amongst enumerators and targets"""
+    all_lats = (
+        enum_locations.get_gps_coords()[:, 0].tolist()
+        + target_locations.get_gps_coords()[:, 0].tolist()
+    )
+    all_lons = (
+        enum_locations.get_gps_coords()[:, 1].tolist()
+        + target_locations.get_gps_coords()[:, 1].tolist()
+    )
+
+    min_lat, max_lat = min(all_lats), max(all_lats)
+    min_lon, max_lon = min(all_lons), max(all_lons)
+
+    center = (min_lat + max_lat) / 2, (min_lon + max_lon) / 2
+    return center

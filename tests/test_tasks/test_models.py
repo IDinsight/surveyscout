@@ -4,7 +4,6 @@ Test assignment algorithms.
 
 from typing import List, Callable
 from numpy.typing import NDArray
-import pandas as pd
 import pytest
 
 from surveyscout.tasks.compute_cost.haversine import get_enum_target_haversine_matrix
@@ -12,6 +11,7 @@ from surveyscout.tasks.models import (
     min_target_optimization_model,
     recursive_min_target_optimization,
 )
+from surveyscout.utils import LocationDataset
 
 
 params = [
@@ -25,7 +25,7 @@ parametrize_args = [(p, f) for p in params for f in functions]
 
 
 @pytest.fixture(scope="module")
-def enum_target_matrix(enum_locs: pd.DataFrame, target_locs: pd.DataFrame):
+def enum_target_matrix(enum_locs: LocationDataset, target_locs: LocationDataset):
     """Load test target-enumerator cost matrix."""
     return get_enum_target_haversine_matrix(enum_locs, target_locs).values
 
