@@ -10,10 +10,12 @@ def compute_center(
 ) -> Tuple[float, float]:
     """Compute center coordinate amongst enumerators and targets"""
     all_lats = (
-        enum_locations.get_gps_coords()[:, 0] + target_locations.get_gps_coords()[:, 0]
+        enum_locations.get_gps_coords()[:, 0].tolist()
+        + target_locations.get_gps_coords()[:, 0].tolist()
     )
     all_lons = (
-        enum_locations.get_gps_coords()[:, 1] + target_locations.get_gps_coords()[:, 1]
+        enum_locations.get_gps_coords()[:, 1].tolist()
+        + target_locations.get_gps_coords()[:, 1].tolist()
     )
 
     min_lat, max_lat = min(all_lats), max(all_lats)
