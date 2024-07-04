@@ -11,7 +11,7 @@ outputs a table of surveyors and their assigned targets such that the **overall 
 ## Usage
 
 ```shell
-pip install https://github.com/IDinsight/surveyscout.git`
+pip install git+https://github.com/IDinsight/surveyscout.git
 ```
 
 We first need GPS coordinates of the surveyors and targets. Let's say we have
