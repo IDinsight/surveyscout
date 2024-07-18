@@ -19,21 +19,9 @@ def add_visit_order(
     assignment_df: pd.DataFrame,
     target_locations: LocationDataset,
 ) -> pd.DataFrame:
-    """Task to add suggested visit order to the assignment dataframe"""
-    visit_orders = asyncio.run(_get_visit_order(assignment_df, target_locations))
-
-    assignment_df = assignment_df.merge(
-        visit_orders, on=["target_id", "enum_id"], how="left"
-    )
-
-    return assignment_df
-
-
-async def _get_visit_order(
-    assignment_df: pd.DataFrame,
-    target_locations: LocationDataset,
-) -> pd.DataFrame:
     """
+    Task to add suggested visit order to the assignment dataframe.
+
     Suggests the route for the enumerators to visit the targets using OSRM's greedy
     travelling salesman algorithm.
 
@@ -56,6 +44,23 @@ async def _get_visit_order(
             - "cost": inherited from assignment_df
             - "target_visit_order": suggested order of visiting
             - "distance_to_next_in_km": distance to the next target in kilometers
+    """
+    visit_orders = asyncio.run(_get_visit_order(assignment_df, target_locations))
+
+    assignment_df = assignment_df.merge(
+        visit_orders, on=["target_id", "enum_id"], how="left"
+    )
+
+    return assignment_df
+
+
+async def _get_visit_order(
+    assignment_df: pd.DataFrame,
+    target_locations: LocationDataset,
+) -> pd.DataFrame:
+    """
+    Suggests the route for the enumerators to visit the targets using OSRM's greedy
+    travelling salesman algorithm.
     """
     visit_ranks = []
 
