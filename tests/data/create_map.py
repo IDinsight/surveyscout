@@ -1,5 +1,5 @@
 """
-Creae a sample map of assignments using test data.
+Create a sample map of assignments using test data.
 
 Requires:
     - pandas
