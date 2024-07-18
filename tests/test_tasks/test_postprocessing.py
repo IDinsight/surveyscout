@@ -7,7 +7,7 @@ from surveyscout.tasks.compute_cost import (
     get_enum_target_haversine_matrix,
 )
 from surveyscout.tasks.models import min_target_optimization_model
-from surveyscout.tasks.postprocessing import postprocess_results
+from surveyscout.tasks.postprocessing import convert_assignment_matrix_to_table
 
 params = [
     [0, 10, 42, 500],
@@ -32,7 +32,7 @@ def assignment_matrix(enum_target_cost_matrix):
 def test_postprocess_results(
     assignment_matrix, enum_locs, target_locs, enum_target_cost_matrix
 ):
-    df = postprocess_results(
+    df = convert_assignment_matrix_to_table(
         assignment_matrix, enum_locs, target_locs, enum_target_cost_matrix
     )
 

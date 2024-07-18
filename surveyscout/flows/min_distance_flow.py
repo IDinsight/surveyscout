@@ -12,7 +12,7 @@ from surveyscout.tasks.models import (
     min_target_optimization_model,
     recursive_min_target_optimization,
 )
-from surveyscout.tasks.postprocessing import postprocess_results
+from surveyscout.tasks.postprocessing import convert_assignment_matrix_to_table
 from surveyscout.utils import LocationDataset
 
 
@@ -125,7 +125,7 @@ def basic_min_distance_flow(
     if results_matrix is None:
         raise ValueError("No solution found. Please relax constraints.")
 
-    results = postprocess_results(
+    results = convert_assignment_matrix_to_table(
         assignment_matrix=results_matrix,
         enum_locations=enum_locations,
         target_locations=target_locations,
@@ -143,7 +143,7 @@ def recursive_min_distance_flow(
     max_total_cost: float,
     cost_function="haversine",
     param_increment: Union[int, float] = 5,
-) -> Tuple[pd.DataFrame, Dict]:
+) -> Tuple[Union[pd.DataFrame, None], Dict]:
     """
     Implements the recursive min target optimization model.
 
@@ -198,6 +198,9 @@ def recursive_min_distance_flow(
         cost_function=cost_function,
     )
 
+    # Compute the maximum cost an enumerator has to travel to a single target
+    # This sets the minimum possible value for max_cost
+    # cost_matrix.min(axis=1): cost of trip to the nearest target for each enumerator
     min_possible_max_distance = cost_matrix.min(axis=1).max()
 
     if max_cost <= min_possible_max_distance:
@@ -216,7 +219,7 @@ def recursive_min_distance_flow(
         logging.warning("No solution found. Please relax constraints.")
         return None, params
 
-    results = postprocess_results(
+    results = convert_assignment_matrix_to_table(
         assignment_matrix=results_matrix,
         enum_locations=enum_locations,
         target_locations=target_locations,
