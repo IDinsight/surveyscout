@@ -49,7 +49,7 @@ def add_visit_order(
 
     assignment_df = assignment_df.merge(
         visit_orders, on=["target_id", "enum_id"], how="left"
-    )
+    ).sort_values(by=["enum_id", "target_visit_order"])
 
     return assignment_df
 
@@ -89,12 +89,12 @@ async def _fetch_osrm_trip_data(
     coordinates_string: str, session: aiohttp.ClientSession
 ) -> dict:
     """Makes OSRM trip request"""
-    trip_endpoint = "/trip/v1/car/{coordinates_string}"
+    trip_endpoint = f"/trip/v1/car/{coordinates_string}"
     params = dict(
         steps="false", geometries="polyline", overview="simplified", annotations="false"
     )
     async with session.get(
-        OSRM_URL + trip_endpoint.format(coordinates_string=coordinates_string),
+        OSRM_URL + trip_endpoint,
         params=params,
     ) as response:
         response.raise_for_status()

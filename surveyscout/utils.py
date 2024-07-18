@@ -70,6 +70,18 @@ class LocationDataset(object):
     def __len__(self):
         return len(self.df)
 
+    def __repr__(self) -> str:
+        instance = (
+            f'<LocationDataset(\n    id_column="{self.id_column}",\n'
+            f'    gps_lat_column="{self.gps_lat_column}",\n'
+            f'    gps_lng_column="{self.gps_lng_column}"\n'
+            f") of length {len(self)}>"
+        )
+
+        df_string = repr(self.df)
+
+        return instance + "\n" + df_string
+
 
 def validate_data_config(locations: LocationDataset) -> bool:
     """Checks if the enum_df is consistent with the config.
