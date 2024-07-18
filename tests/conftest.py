@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Generator
 import numpy as np
 from numpy.typing import NDArray
+import aiohttp
 
 import pandas as pd
 import pytest
@@ -67,14 +68,71 @@ def mock_return_matrix(
 
 
 @pytest.fixture(scope="session", autouse=True)
-def patch_osrm_call(monkeysession: pytest.MonkeyPatch) -> None:
+def patch_osrm_table_call(monkeysession: pytest.MonkeyPatch) -> None:
     """
-    Monkeypatch call OSRM API.
+    Monkeypatch calls to OSRM /table API
     """
 
     monkeysession.setattr(
         "surveyscout.tasks.compute_cost.osrm._get_enum_target_matrix_osrm",
         mock_return_matrix,
+    )
+
+
+async def mock_fetch_osrm_trip_data(
+    coordinates_string: str, session: aiohttp.ClientSession
+) -> dict:
+    """Mock OSRM trip data"""
+    lng_lat_coords = [
+        list(map(float, x.split(","))) for x in coordinates_string.split(";")
+    ]
+
+    order = np.random.permutation(len(lng_lat_coords))
+    waypoints = [
+        {
+            "waypoint_index": i,
+            "trips_index": 0,
+            "distance": 2.652005364,
+            "name": "",
+            "location": coords,
+        }
+        for i, coords in zip(order, lng_lat_coords)
+    ]
+    legs = [
+        {
+            "steps": [],
+            "summary": "",
+            "weight": 1178.4,
+            "duration": 1178.4,
+            "distance": 12450.5,
+        }
+        for i in range(len(lng_lat_coords))
+    ]
+
+    return {
+        "code": "Ok",
+        "trips": [
+            {
+                "legs": legs,
+                "weight_name": "routability",
+                "weight": 8910.4,
+                "duration": 8818.3,
+                "distance": 22183.3,
+            }
+        ],
+        "waypoints": waypoints,
+    }
+
+
+@pytest.fixture(scope="session", autouse=True)
+def patch_osrm_trip_call(monkeysession: pytest.MonkeyPatch) -> None:
+    """
+    Monkeypatch calls to OSRM /trip API
+    """
+
+    monkeysession.setattr(
+        "surveyscout.tasks.rank._fetch_osrm_trip_data",
+        mock_fetch_osrm_trip_data,
     )
 
 
