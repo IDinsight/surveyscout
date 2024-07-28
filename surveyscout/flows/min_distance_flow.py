@@ -1,3 +1,5 @@
+import logging
+
 from typing import Dict, Union, Tuple
 
 import pandas as pd
@@ -13,6 +15,10 @@ from surveyscout.tasks.models import (
 )
 from surveyscout.tasks.postprocessing import postprocess_results
 from surveyscout.utils import LocationDataset
+
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 
 def basic_min_distance_flow(
@@ -74,10 +80,17 @@ def basic_min_distance_flow(
         raise ValueError(
             "Invalid routing method. Please choose from 'haversine' or 'osrm'."
         )
-
+    logger.info(f"Calculating distance matrix using {cost_function} routing method.")
+    logger.info(
+        f"Number of enumerators: {len(enum_locations.get_ids())}, Number of targets: {len(target_locations.get_ids())}"
+        f"Total number of possible assignments: {len(enum_locations.get_ids()) * len(target_locations.get_ids())}"
+    )
     matrix_df = cost_func(
         enum_locations=enum_locations, target_locations=target_locations
     )
+    logger.info("Distance matrix calculated successfully.")
+
+    logger.info("Applying optimization model to find minimum cost assignment.")
     results_matrix = min_target_optimization_model(
         cost_matrix=matrix_df.values,
         min_target=min_target,
@@ -85,12 +98,13 @@ def basic_min_distance_flow(
         max_cost=max_distance,
         max_total_cost=max_total_distance,
     )
-
+    logger.info(f"Successfully assigned {len(results_matrix)} targets to enumerators.")
     results = postprocess_results(
         results=results_matrix,
         enum_locations=enum_locations,
         target_locations=target_locations,
     )
+    logger.info(f"Total cost: {results['cost'].sum()}")
     return results
 
 
@@ -158,6 +172,12 @@ def recursive_min_distance_flow(
             "Invalid routing method. Please choose from 'haversine' or 'osrm'."
         )
 
+    logger.info(f"Calculating distance matrix using {cost_function} routing method.")
+    logger.info(
+        f"Number of enumerators: {len(enum_locations.get_ids())}, Number of targets: {len(target_locations.get_ids())}"
+        f"Total number of possible assignments: {len(enum_locations.get_ids()) * len(target_locations.get_ids())}"
+    )
+
     matrix_df = cost_func(
         enum_locations=enum_locations, target_locations=target_locations
     )
@@ -165,19 +185,22 @@ def recursive_min_distance_flow(
 
     if max_distance <= min_possible_max_distance:
         max_distance = min_possible_max_distance
+    logger.info("Distance matrix calculated successfully.")
 
+    logger.info("Applying optimization model to find minimum cost assignment.")
     results_matrix, params = recursive_min_target_optimization(
-        cost_matrix=distance_df.values,
+        cost_matrix=matrix_df.values,
         min_target=min_target,
         max_target=max_target,
         max_cost=max_distance,
         max_total_cost=max_total_distance,
         param_increment=param_increment,
     )
-
+    logger.info(f"Successfully assigned {len(results_matrix)} targets to enumerators.")
     results = postprocess_results(
         results=results_matrix,
         enum_locations=enum_locations,
         target_locations=target_locations,
     )
+    logger.info(f"Total cost: {results['cost'].sum()}")
     return results, params

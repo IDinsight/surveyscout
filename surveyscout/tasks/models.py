@@ -1,7 +1,11 @@
+import logging
 from typing import Tuple
 import numpy as np
 from numpy.typing import NDArray
 from ortools.linear_solver import pywraplp
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 
 def min_target_optimization_model(
@@ -88,7 +92,7 @@ def min_target_optimization_model(
     status = solver.Solve()
 
     if status == pywraplp.Solver.OPTIMAL:
-        print("Optimal value: ", solver.Objective().Value())
+        logger.info("Optimal value: ", solver.Objective().Value())
 
         solution_matrix = np.zeros((n_target, n_enum))
         for i in range(n_target):
@@ -153,6 +157,12 @@ def recursive_min_target_optimization(
         max_target,
         max_cost,
         max_total_cost,
+    )
+    logger.info(
+        f"Optimization Constraints:\n"
+        f"""  * {min_target} <= targets <= {max_target}\n"""
+        f"""  * max_cost = {max_cost:.3f}km\n"""
+        f"""  * max_total_cost = {max_total_cost:.3f}km\n"""
     )
 
     if result is not None:
