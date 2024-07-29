@@ -92,7 +92,7 @@ def min_target_optimization_model(
     status = solver.Solve()
 
     if status == pywraplp.Solver.OPTIMAL:
-        logger.info("Optimal value: ", solver.Objective().Value())
+        logger.info(f"Optimal value: {solver.Objective().Value()}")
 
         solution_matrix = np.zeros((n_target, n_enum))
         for i in range(n_target):
