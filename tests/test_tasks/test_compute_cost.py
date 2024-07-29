@@ -3,7 +3,7 @@ from numpy.typing import NDArray
 import pytest
 from surveyscout.tasks.compute_cost import (
     get_enum_target_haversine_matrix,
-    get_enum_target_osrm_matrix,
+    get_enum_target_osrm_matrix_async,
     get_enum_target_google_distance_matrix,
 )
 from surveyscout.utils import LocationDataset
@@ -26,7 +26,7 @@ def enum_target_haversine_matrix(
 def enum_target_osrm_matrix(
     enum_locs: LocationDataset, target_locs: LocationDataset
 ) -> NDArray:
-    return get_enum_target_osrm_matrix(
+    return get_enum_target_osrm_matrix_async(
         enum_locations=enum_locs, target_locations=target_locs
     )
 
@@ -47,7 +47,7 @@ def cost_matrix(
     target_locs: LocationDataset,
 ) -> NDArray:
     if request.param == "osrm":
-        return get_enum_target_osrm_matrix(enum_locs, target_locs)
+        return get_enum_target_osrm_matrix_async(enum_locs, target_locs)
     if request.param == "haversine":
         return get_enum_target_haversine_matrix(enum_locs, target_locs)
     if request.param == "google":
