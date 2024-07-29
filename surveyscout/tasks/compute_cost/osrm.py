@@ -82,13 +82,6 @@ async def _get_unique_target_enum_row_osrm_async(
         return []
 
 
-def _format_url_with_coords_osrm(url: str, coords: NDArray) -> str:
-    """Formats URL with GPS coordinates for OSRM API"""
-    coord_str = ";".join([f"{x[1]},{x[0]}" for x in coords])
-    url = url + coord_str + "?sources=0&annotations=distance,duration"
-    return url
-
-
 def get_enum_target_osrm_matrix(
     enum_locations: LocationDataset,
     target_locations: LocationDataset,
@@ -151,3 +144,10 @@ def _get_unique_target_enum_row_osrm(
         return np.array(data) / 1000
     else:
         return []
+
+
+def _format_url_with_coords_osrm(url: str, coords: NDArray) -> str:
+    """Formats URL with GPS coordinates for OSRM API"""
+    coord_str = ";".join([f"{x[1]},{x[0]}" for x in coords])
+    url = url + coord_str + "?sources=0&annotations=distance,duration"
+    return url
