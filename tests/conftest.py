@@ -76,6 +76,10 @@ def patch_osrm_call(monkeysession: pytest.MonkeyPatch) -> None:
         "surveyscout.tasks.compute_cost.osrm._get_enum_target_matrix_osrm",
         mock_return_matrix,
     )
+    monkeysession.setattr(
+        "surveyscout.tasks.compute_cost.osrm._get_enum_target_matrix_osrm_async",
+        mock_return_matrix,
+    )
 
 
 success_element = {
