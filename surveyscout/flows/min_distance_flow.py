@@ -5,7 +5,7 @@ import logging
 
 from surveyscout.tasks.compute_cost import (
     get_enum_target_haversine_matrix,
-    get_enum_target_osrm_matrix,
+    get_enum_target_osrm_matrix_async,
     get_enum_target_google_distance_matrix,
 )
 from surveyscout.tasks.models import (
@@ -27,7 +27,7 @@ def get_cost_matrix(
                 enum_locations=enum_locations, target_locations=target_locations
             )
         case "osrm":
-            return get_enum_target_osrm_matrix(
+            return get_enum_target_osrm_matrix_async(
                 enum_locations=enum_locations, target_locations=target_locations
             )
         case "google_duration":

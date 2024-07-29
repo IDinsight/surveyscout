@@ -4,6 +4,7 @@ import pytest
 from surveyscout.tasks.compute_cost import (
     get_enum_target_haversine_matrix,
     get_enum_target_osrm_matrix,
+    get_enum_target_osrm_matrix_async,
     get_enum_target_google_distance_matrix,
 )
 from surveyscout.utils import LocationDataset
@@ -18,6 +19,15 @@ def enum_target_haversine_matrix(
     enum_locs: LocationDataset, target_locs: LocationDataset
 ) -> NDArray:
     return get_enum_target_haversine_matrix(
+        enum_locations=enum_locs, target_locations=target_locs
+    )
+
+
+@pytest.fixture(scope="module")
+def enum_target_osrm_matrix_async(
+    enum_locs: LocationDataset, target_locs: LocationDataset
+) -> NDArray:
+    return get_enum_target_osrm_matrix_async(
         enum_locations=enum_locs, target_locations=target_locs
     )
 
@@ -40,7 +50,7 @@ def enum_target_google_distance_matrix(
     )
 
 
-@pytest.fixture(params=["osrm", "haversine", "google"])
+@pytest.fixture(params=["osrm", "osrm_async", "haversine", "google"])
 def cost_matrix(
     request: pytest.FixtureRequest,
     enum_locs: LocationDataset,
@@ -48,6 +58,8 @@ def cost_matrix(
 ) -> NDArray:
     if request.param == "osrm":
         return get_enum_target_osrm_matrix(enum_locs, target_locs)
+    if request.param == "osrm_async":
+        return get_enum_target_osrm_matrix_async(enum_locs, target_locs)
     if request.param == "haversine":
         return get_enum_target_haversine_matrix(enum_locs, target_locs)
     if request.param == "google":
