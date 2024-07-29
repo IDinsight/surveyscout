@@ -1,8 +1,9 @@
 from typing import List
+import aiohttp
 import numpy as np
 from numpy.typing import NDArray
 import pandas as pd
-import requests
+import asyncio
 
 from surveyscout.config import OSRM_URL
 from surveyscout.utils import LocationDataset
@@ -44,28 +45,35 @@ def get_enum_target_osrm_matrix(
 
 def _get_enum_target_matrix_osrm(
     url: str, target_coords: NDArray, enum_coords: NDArray
-) -> NDArray | List:
-    """Get the matrix of distances between enumerators and targets
-    using OSRM."""
-    matrix = [
-        _get_unique_target_enum_row_osrm(url, target_coord, enum_coords)
-        for target_coord in target_coords
-    ]
+) -> List:
+    """Get the matrix of distances between enumerators and targets using OSRM api."""
 
+    matrix = asyncio.run(_gather_matrix(url, target_coords, enum_coords))
     return matrix
 
 
-def _get_unique_target_enum_row_osrm(
+async def _gather_matrix(url: str, target_coords: NDArray, enum_coords: NDArray):
+    matrix_computation_tasks = [
+        _get_unique_target_enum_row_osrm(url, target_coord, enum_coords)
+        for target_coord in target_coords
+    ]
+    return await asyncio.gather(*matrix_computation_tasks)
+
+
+async def _get_unique_target_enum_row_osrm(
     url: str, target_coord: NDArray, enum_coords: NDArray
 ) -> NDArray | List:
     """Get the row of the matrix for a target coordinate."""
     coords = np.insert(enum_coords, 0, target_coord, axis=0)
     url = _format_url_with_coords_osrm(url, coords)
-    response = requests.get(url)
-    if "distances" in response.json():
-        data = response.json()["distances"][0][1:]
-        return np.array(data) / 1000
 
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as response:
+            response_json = await response.json()
+
+    if "distances" in response_json:
+        data = response_json["distances"][0][1:]
+        return np.array(data) / 1000
     else:
         return []
 
