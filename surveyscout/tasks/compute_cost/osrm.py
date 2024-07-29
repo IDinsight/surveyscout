@@ -1,16 +1,18 @@
-from typing import List
+import os
+from typing import List, Optional
 import numpy as np
 from numpy.typing import NDArray
 import pandas as pd
 import requests
 
-from surveyscout.config import OSRM_URL
+import surveyscout
 from surveyscout.utils import LocationDataset
 
 
 def get_enum_target_osrm_matrix(
     enum_locations: LocationDataset,
     target_locations: LocationDataset,
+    osrm_url: Optional[str] = None,
 ) -> pd.DataFrame:
     """Get the matrix of distances between enumerators and targets using OSRM api.
     This function calls the OSRM /table/v1/driving/ api endpoint to get the matrix
@@ -25,6 +27,11 @@ def get_enum_target_osrm_matrix(
         A <LocationDataset> object containing the id and locations of targets,
          with a similar structure to `enum_locations`.
 
+    osrm_url: Optional[str]
+        URL for OSRM API. If None, looks for a non-null value in this order:
+        1. library config surveyscout.OSRM_URL, 2. environment variable OSRM_URL, 3.
+        default value "http://localhost:5001".
+
     Returns
     -------
     pd.DataFrame
@@ -34,7 +41,13 @@ def get_enum_target_osrm_matrix(
     enums_coords = enum_locations.get_gps_coords()
     targets_coords = target_locations.get_gps_coords()
 
-    url = OSRM_URL + "/table/v1/driving/"
+    osrm_url = (
+        osrm_url
+        or surveyscout.OSRM_URL
+        or os.getenv("OSRM_URL")
+        or "http://localhost:5001"
+    )
+    url = osrm_url + "/table/v1/driving/"
     matrix = _get_enum_target_matrix_osrm(url, targets_coords, enums_coords)
     matrix_df = pd.DataFrame(
         matrix, index=target_locations.get_ids(), columns=enum_locations.get_ids()
