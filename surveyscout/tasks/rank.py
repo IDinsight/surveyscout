@@ -1,8 +1,10 @@
+import os
 import pandas as pd
 import aiohttp
+from typing import Optional
 import asyncio
 
-from surveyscout.config import OSRM_URL
+import surveyscout
 from surveyscout.utils import LocationDataset
 
 
@@ -18,6 +20,7 @@ def _convert_coords_to_osrm_query(locations: LocationDataset) -> str:
 def add_visit_order(
     assignment_df: pd.DataFrame,
     target_locations: LocationDataset,
+    osrm_url: Optional[str] = None,
 ) -> pd.DataFrame:
     """
     Task to add suggested visit order to the assignment dataframe.
@@ -35,6 +38,11 @@ def add_visit_order(
         A <LocationDataset> object containing the id and locations of targets, with a
         similar structure to `enum_locations`.
 
+    osrm_url: Optional[str]
+        URL for OSRM API. If None, looks for a non-null value in this order:
+        1. library config surveyscout.OSRM_URL, 2. environment variable OSRM_URL, 3.
+        default value "http://localhost:5001".
+
     Returns
     -------
     df : pandas.DataFrame
@@ -45,7 +53,15 @@ def add_visit_order(
             - "target_visit_order": suggested order of visiting
             - "distance_to_next_in_km": distance to the next target in kilometers
     """
-    visit_orders = asyncio.run(_get_visit_order(assignment_df, target_locations))
+    osrm_url = (
+        osrm_url
+        or surveyscout.OSRM_URL
+        or os.getenv("OSRM_URL")
+        or "http://localhost:5001"
+    )
+    url = osrm_url + "/trip/v1/car/"
+
+    visit_orders = asyncio.run(_get_visit_order(assignment_df, target_locations, url))
 
     assignment_df = assignment_df.merge(
         visit_orders, on=["target_id", "enum_id"], how="left"
@@ -57,6 +73,7 @@ def add_visit_order(
 async def _get_visit_order(
     assignment_df: pd.DataFrame,
     target_locations: LocationDataset,
+    url: str,
 ) -> pd.DataFrame:
     """
     Suggests the route for the enumerators to visit the targets using OSRM's greedy
@@ -77,7 +94,7 @@ async def _get_visit_order(
             )
             data = subdf.copy()
 
-            task = _get_visit_order_for_enum(data, coord_query_string, session)
+            task = _get_visit_order_for_enum(data, url, coord_query_string, session)
             tasks.append(task)
 
         visit_ranks = await asyncio.gather(*tasks)
@@ -86,15 +103,14 @@ async def _get_visit_order(
 
 
 async def _fetch_osrm_trip_data(
-    coordinates_string: str, session: aiohttp.ClientSession
+    url: str, coordinates_string: str, session: aiohttp.ClientSession
 ) -> dict:
     """Makes OSRM trip request"""
-    trip_endpoint = f"/trip/v1/car/{coordinates_string}"
     params = dict(
         steps="false", geometries="polyline", overview="simplified", annotations="false"
     )
     async with session.get(
-        OSRM_URL + trip_endpoint,
+        url + coordinates_string,
         params=params,
     ) as response:
         response.raise_for_status()
@@ -102,11 +118,11 @@ async def _fetch_osrm_trip_data(
 
 
 async def _get_visit_order_for_enum(
-    df: pd.DataFrame, coordinates_string: str, session: aiohttp.ClientSession
+    df: pd.DataFrame, url: str, coordinates_string: str, session: aiohttp.ClientSession
 ) -> pd.DataFrame:
     """Get visit order for a given enumerator based on OSRM trip API"""
     response_json = await _fetch_osrm_trip_data(
-        coordinates_string=coordinates_string, session=session
+        url=url, coordinates_string=coordinates_string, session=session
     )
 
     waypoints = response_json["waypoints"]
@@ -127,8 +143,12 @@ def _rerank(df: pd.DataFrame) -> pd.DataFrame:
     """Rerank the visit order of targets for each enumerator so that the first target is
     the closest target."""
     closest_target_id = df.target_id[df.cost.idxmin()]
+
     start_rank = df.loc[df.target_id == closest_target_id, "target_visit_order"].iloc[0]
+
     cycled_ranks = (df.target_visit_order - start_rank) % len(df)
     df["target_visit_order"] = cycled_ranks
+
     df = df.sort_values(by="target_visit_order")
+
     return df

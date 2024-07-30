@@ -80,7 +80,7 @@ def patch_osrm_table_call(monkeysession: pytest.MonkeyPatch) -> None:
 
 
 async def mock_fetch_osrm_trip_data(
-    coordinates_string: str, session: aiohttp.ClientSession
+    url: str, coordinates_string: str, session: aiohttp.ClientSession
 ) -> dict:
     """Mock OSRM trip data"""
     lng_lat_coords = [
