@@ -13,6 +13,7 @@ from surveyscout.tasks.models import (
     recursive_min_target_optimization,
 )
 from surveyscout.tasks.postprocessing import convert_assignment_matrix_to_table
+from surveyscout.tasks.rank import add_visit_order
 from surveyscout.utils import LocationDataset
 
 
@@ -57,6 +58,7 @@ def basic_min_distance_flow(
     max_cost: float,
     max_total_cost: float,
     cost_function="haversine",
+    visit_order=False,
 ) -> pd.DataFrame:
     """
     Executes a basic flow for mapping enumerators to targets with the objective of
@@ -95,6 +97,11 @@ def basic_min_distance_flow(
         the unit cost is 1 meter.
         Defaults to "haversine".
 
+    visit_order : bool
+        A flag to indicate whether to add a column indicating suggested target visit
+        order for each enumerator. Requires an OSRM server.
+        Defaults to False.
+
     Returns
     -------
     results : pd.DataFrame
@@ -131,6 +138,10 @@ def basic_min_distance_flow(
         target_locations=target_locations,
         enum_target_cost_matrix=cost_matrix,
     )
+
+    if visit_order:
+        results = add_visit_order(results, target_locations)
+
     return results
 
 
@@ -143,6 +154,7 @@ def recursive_min_distance_flow(
     max_total_cost: float,
     cost_function="haversine",
     param_increment: Union[int, float] = 5,
+    visit_order: bool = False,
 ) -> Tuple[Union[pd.DataFrame, None], Dict]:
     """
     Implements the recursive min target optimization model.
@@ -184,6 +196,10 @@ def recursive_min_distance_flow(
     param_increment : int
        The percentage increment used to adjust parameter values during the optimization
        recursion if a solution cannot be found. Defaults to 5.
+    visit_order : bool
+        A flag to indicate whether to add a column indicating suggested target visit
+        order for each enumerator. Requires an OSRM server.
+        Defaults to False.
 
     Returns
     -------
@@ -225,4 +241,8 @@ def recursive_min_distance_flow(
         target_locations=target_locations,
         enum_target_cost_matrix=cost_matrix,
     )
+
+    if visit_order:
+        results = add_visit_order(results, target_locations)
+
     return results, params

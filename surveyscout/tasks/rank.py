@@ -124,7 +124,8 @@ async def _get_visit_order_for_enum(
 
 
 def _rerank(df: pd.DataFrame) -> pd.DataFrame:
-    """Rerank the visit order of targets for each enumerator"""
+    """Rerank the visit order of targets for each enumerator so that the first target is
+    the closest target."""
     closest_target_id = df.target_id[df.cost.idxmin()]
     start_rank = df.loc[df.target_id == closest_target_id, "target_visit_order"].iloc[0]
     cycled_ranks = (df.target_visit_order - start_rank) % len(df)
