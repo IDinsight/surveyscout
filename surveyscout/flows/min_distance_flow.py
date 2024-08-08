@@ -12,7 +12,8 @@ from surveyscout.tasks.models import (
     min_target_optimization_model,
     recursive_min_target_optimization,
 )
-from surveyscout.tasks.postprocessing import postprocess_results
+from surveyscout.tasks.postprocessing import convert_assignment_matrix_to_table
+from surveyscout.tasks.rank import add_visit_order
 from surveyscout.utils import LocationDataset
 
 
@@ -57,6 +58,7 @@ def basic_min_distance_flow(
     max_cost: float,
     max_total_cost: float,
     cost_function="haversine",
+    visit_order=False,
 ) -> pd.DataFrame:
     """
     Executes a basic flow for mapping enumerators to targets with the objective of
@@ -95,6 +97,11 @@ def basic_min_distance_flow(
         the unit cost is 1 meter.
         Defaults to "haversine".
 
+    visit_order : bool
+        A flag to indicate whether to add a column indicating suggested target visit
+        order for each enumerator. Requires an OSRM server.
+        Defaults to False.
+
     Returns
     -------
     results : pd.DataFrame
@@ -125,12 +132,16 @@ def basic_min_distance_flow(
     if results_matrix is None:
         raise ValueError("No solution found. Please relax constraints.")
 
-    results = postprocess_results(
+    results = convert_assignment_matrix_to_table(
         assignment_matrix=results_matrix,
         enum_locations=enum_locations,
         target_locations=target_locations,
         enum_target_cost_matrix=cost_matrix,
     )
+
+    if visit_order:
+        results = add_visit_order(results, target_locations)
+
     return results
 
 
@@ -143,7 +154,8 @@ def recursive_min_distance_flow(
     max_total_cost: float,
     cost_function="haversine",
     param_increment: Union[int, float] = 5,
-) -> Tuple[pd.DataFrame, Dict]:
+    visit_order: bool = False,
+) -> Tuple[Union[pd.DataFrame, None], Dict]:
     """
     Implements the recursive min target optimization model.
 
@@ -184,6 +196,10 @@ def recursive_min_distance_flow(
     param_increment : int
        The percentage increment used to adjust parameter values during the optimization
        recursion if a solution cannot be found. Defaults to 5.
+    visit_order : bool
+        A flag to indicate whether to add a column indicating suggested target visit
+        order for each enumerator. Requires an OSRM server.
+        Defaults to False.
 
     Returns
     -------
@@ -198,6 +214,9 @@ def recursive_min_distance_flow(
         cost_function=cost_function,
     )
 
+    # Compute the maximum cost an enumerator has to travel to a single target
+    # This sets the minimum possible value for max_cost
+    # cost_matrix.min(axis=1): cost of trip to the nearest target for each enumerator
     min_possible_max_distance = cost_matrix.min(axis=1).max()
 
     if max_cost <= min_possible_max_distance:
@@ -216,10 +235,14 @@ def recursive_min_distance_flow(
         logging.warning("No solution found. Please relax constraints.")
         return None, params
 
-    results = postprocess_results(
+    results = convert_assignment_matrix_to_table(
         assignment_matrix=results_matrix,
         enum_locations=enum_locations,
         target_locations=target_locations,
         enum_target_cost_matrix=cost_matrix,
     )
+
+    if visit_order:
+        results = add_visit_order(results, target_locations)
+
     return results, params

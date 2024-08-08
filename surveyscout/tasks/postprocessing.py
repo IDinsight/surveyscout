@@ -5,7 +5,7 @@ import pandas as pd
 from surveyscout.utils import LocationDataset
 
 
-def postprocess_results(
+def convert_assignment_matrix_to_table(
     assignment_matrix: NDArray | List[List],
     enum_locations: LocationDataset,
     target_locations: LocationDataset,

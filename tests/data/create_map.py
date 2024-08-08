@@ -1,3 +1,11 @@
+"""
+Create a sample map of assignments using test data.
+
+Requires:
+    - pandas
+    - folium
+"""
+
 import pandas as pd
 import folium
 

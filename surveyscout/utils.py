@@ -1,3 +1,4 @@
+from typing import Optional, List
 from numpy.typing import NDArray
 from pathlib import Path
 
@@ -22,21 +23,42 @@ class LocationDataset(object):
         self.gps_lng_column = gps_lng_column
         self._data_len = len(dataframe)
 
+    @property
+    def ids(self) -> pd.Series:
+        return self.get_ids()
+
+    @property
+    def gps_latitudes(self) -> NDArray:
+        return self.df[self.gps_lat_column].values
+
+    @property
+    def gps_longitudes(self) -> NDArray:
+        return self.df[self.gps_lng_column].values
+
+    @property
+    def gps_coords(self) -> NDArray:
+        return self.get_gps_coords(subset_ids=None)
+
     def get_ids(self) -> NDArray:
         return self.df[self.id_column].values
 
     def get_id_column(self) -> str:
         return self.id_column
 
-    def get_gps_coords(self) -> NDArray:
-        return self.df[[self.gps_lat_column, self.gps_lng_column]].values
+    def get_gps_coords(self, subset_ids: Optional[List[str]] = None) -> NDArray:
+        columns = [self.gps_lat_column, self.gps_lng_column]
+        if subset_ids:
+            mask = self.df[self.id_column].isin(subset_ids)
+            return self.df.loc[mask, columns].values
+        return self.df[columns].values
 
     def get_gps_columns(self) -> tuple[str, str]:
         return (self.gps_lat_column, self.gps_lng_column)
 
-    def create_subset(self, new_df: pd.DataFrame):
+    def create_subset(self, subset_ids: Optional[List[str]] = None):
+        mask = self.df[self.id_column].isin(subset_ids)
         return LocationDataset(
-            dataframe=new_df,
+            dataframe=self.get_df()[mask],
             id_column=self.id_column,
             gps_lat_column=self.gps_lat_column,
             gps_lng_column=self.gps_lng_column,
@@ -47,6 +69,18 @@ class LocationDataset(object):
 
     def __len__(self):
         return len(self.df)
+
+    def __repr__(self) -> str:
+        instance = (
+            f'<LocationDataset(\n    id_column="{self.id_column}",\n'
+            f'    gps_lat_column="{self.gps_lat_column}",\n'
+            f'    gps_lng_column="{self.gps_lng_column}"\n'
+            f") of length {len(self)}>"
+        )
+
+        df_string = repr(self.df)
+
+        return instance + "\n" + df_string
 
 
 def validate_data_config(locations: LocationDataset) -> bool:

@@ -1,5 +1,5 @@
 import numpy as np
-from numpy.typing import NDArray
+import pandas as pd
 import pytest
 from surveyscout.tasks.compute_cost import (
     get_enum_target_haversine_matrix,
@@ -16,7 +16,7 @@ Test cost computation functions.
 @pytest.fixture(scope="module")
 def enum_target_haversine_matrix(
     enum_locs: LocationDataset, target_locs: LocationDataset
-) -> NDArray:
+) -> pd.DataFrame:
     return get_enum_target_haversine_matrix(
         enum_locations=enum_locs, target_locations=target_locs
     )
@@ -25,7 +25,7 @@ def enum_target_haversine_matrix(
 @pytest.fixture(scope="module")
 def enum_target_osrm_matrix(
     enum_locs: LocationDataset, target_locs: LocationDataset
-) -> NDArray:
+) -> pd.DataFrame:
     return get_enum_target_osrm_matrix(
         enum_locations=enum_locs, target_locations=target_locs
     )
@@ -34,7 +34,7 @@ def enum_target_osrm_matrix(
 @pytest.fixture(scope="module")
 def enum_target_google_distance_matrix(
     enum_locs: LocationDataset, target_locs: LocationDataset
-) -> NDArray:
+) -> pd.DataFrame:
     return get_enum_target_google_distance_matrix(
         enum_locations=enum_locs, target_locations=target_locs
     )
@@ -45,7 +45,7 @@ def cost_matrix(
     request: pytest.FixtureRequest,
     enum_locs: LocationDataset,
     target_locs: LocationDataset,
-) -> NDArray:
+) -> pd.DataFrame:
     if request.param == "osrm":
         return get_enum_target_osrm_matrix(enum_locs, target_locs)
     if request.param == "haversine":
@@ -55,24 +55,24 @@ def cost_matrix(
 
 
 def test_if_enum_target_cost_matrix_indices_match_enumerator_ids(
-    cost_matrix: NDArray, enum_locs: LocationDataset
+    cost_matrix: pd.DataFrame, enum_locs: LocationDataset
 ) -> None:
     assert np.all(cost_matrix.columns.values == enum_locs.get_ids())
 
 
 def test_if_enum_target_cost_matrix_columns_match_target_ids(
-    cost_matrix: NDArray, target_locs: LocationDataset
+    cost_matrix: pd.DataFrame, target_locs: LocationDataset
 ) -> None:
     assert np.all(cost_matrix.index.values == target_locs.get_ids())
 
 
 def test_if_enum_target_cost_matrix_has_correct_shape(
-    cost_matrix: NDArray, enum_locs: LocationDataset, target_locs: LocationDataset
+    cost_matrix: pd.DataFrame, enum_locs: LocationDataset, target_locs: LocationDataset
 ) -> None:
     assert cost_matrix.shape == (len(target_locs), len(enum_locs))
 
 
 def test_if_enum_target_cost_matrix_values_are_nonnegative(
-    cost_matrix: NDArray,
+    cost_matrix: pd.DataFrame,
 ) -> None:
     assert np.all(cost_matrix.values >= 0)
